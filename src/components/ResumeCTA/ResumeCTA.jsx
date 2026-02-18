@@ -1,8 +1,8 @@
 import AnimatedSection from '../AnimatedSection'
 import './ResumeCTA.css'
 
-// Replace with your Google Drive resume link (use "Share" → "Anyone with the link" for view/download)
-const RESUME_URL = 'https://drive.google.com/file/d/YOUR_FILE_ID/view'
+// Google Drive PDF resume (Share → "Anyone with the link" for view/download)
+const RESUME_URL = 'https://drive.google.com/file/d/1iBpx7QKHaM-MaPBpit7IdUUyeD5G8VSI/view?usp=sharing'
 
 export default function ResumeCTA() {
   return (
