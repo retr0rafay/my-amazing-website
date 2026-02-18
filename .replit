@@ -1,0 +1,18 @@
+run = "npm run dev"
+entrypoint = "index.html"
+
+[nix]
+channel = "stable-22_11"
+
+[deployment]
+run = ["sh", "-c", "npm install && npm run build"]
+staticPaths = ["dist"]
+deploymentTarget = "cloudrun"
+
+[languages.javascript]
+pattern = "**/*.{js,jsx}"
+syntax = "javascript"
+
+[languages.css]
+pattern = "**/*.css"
+syntax = "css"

@@ -1,0 +1,59 @@
+.theme-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 9999;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--persona-text);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: var(--glass-highlight), var(--glass-shadow);
+}
+
+.theme-toggle:hover {
+  border-color: var(--glass-border-strong);
+  transform: scale(1.06);
+  box-shadow: var(--glass-highlight), 0 0 24px var(--persona-glow);
+}
+
+.theme-toggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--persona-accent);
+}
+
+.theme-toggle__icon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: rotate(-90deg);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.theme-toggle__icon--sun {
+  opacity: 0;
+}
+
+.theme-toggle__icon--moon {
+  opacity: 0;
+}
+
+[data-theme='dark'] .theme-toggle__icon--moon {
+  opacity: 1;
+  transform: rotate(0);
+}
+
+[data-theme='light'] .theme-toggle__icon--sun {
+  opacity: 1;
+  transform: rotate(0);
+}

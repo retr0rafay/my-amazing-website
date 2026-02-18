@@ -1,0 +1,39 @@
+.resume-cta.section {
+  padding: 3rem 1.5rem 4rem;
+  max-width: 56rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.resume-cta__text {
+  font-size: 1.1rem;
+  color: var(--persona-text-muted);
+  margin-bottom: 1rem;
+}
+
+.resume-cta__button {
+  display: inline-block;
+  padding: 0.85rem 1.75rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-border-strong);
+  border-radius: 12px;
+  color: var(--persona-cyan);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  box-shadow: var(--glass-highlight), var(--glass-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.resume-cta__button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glass-highlight), 0 0 24px var(--persona-glow);
+  border-color: var(--persona-cyan);
+}
+
+.resume-cta__button:focus {
+  outline: none;
+  box-shadow: var(--glass-highlight), 0 0 0 2px var(--persona-accent);
+}

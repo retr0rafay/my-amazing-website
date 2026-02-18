@@ -1,0 +1,301 @@
+.experience.section {
+  padding: 4rem 1.5rem;
+  max-width: 56rem;
+  margin: 0 auto;
+}
+
+.experience__section-header {
+  margin-bottom: 2rem;
+}
+
+.experience__subtitle {
+  font-family: ui-monospace, 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+  font-size: 0.8rem;
+  color: var(--persona-text-muted);
+  letter-spacing: 0.05em;
+  margin-top: -0.5rem;
+}
+
+.experience__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+  padding-left: 2.75rem;
+}
+
+/* Timeline line */
+.experience__list::before {
+  content: '';
+  position: absolute;
+  left: 0.6rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 2px;
+  background: linear-gradient(180deg, var(--persona-cyan), transparent 10%, transparent 90%, var(--persona-cyan));
+  opacity: 0.4;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Timeline nodes */
+.experience__card::after {
+  content: '';
+  position: absolute;
+  left: -2.05rem;
+  top: 1.5rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--persona-bg-mid);
+  border: 2px solid var(--persona-cyan);
+  opacity: 0.8;
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
+}
+
+.experience__card--current::after {
+  background: var(--persona-cyan);
+  box-shadow: 0 0 16px var(--persona-glow);
+}
+
+.experience__card {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  padding: 0;
+  position: relative;
+  margin-left: 0;
+}
+
+.experience.animated-section--visible .experience__card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.experience.animated-section--visible .experience__card:nth-child(1) { transition-delay: 0.06s; }
+.experience.animated-section--visible .experience__card:nth-child(2) { transition-delay: 0.14s; }
+.experience.animated-section--visible .experience__card:nth-child(3) { transition-delay: 0.22s; }
+.experience.animated-section--visible .experience__card:nth-child(4) { transition-delay: 0.3s; }
+
+/* Terminal window */
+.experience__terminal {
+  overflow: hidden;
+}
+
+.experience__terminal::before {
+  display: none;
+}
+
+.experience__terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  background: rgba(0, 0, 0, 0.45);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.experience__terminal-dots {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.experience__terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.experience__terminal-dot--red {
+  background: #ff5f56;
+}
+
+.experience__terminal-dot--yellow {
+  background: #ffbd2e;
+}
+
+.experience__terminal-dot--green {
+  background: #27c93f;
+}
+
+.experience__terminal-title {
+  font-family: ui-monospace, 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--persona-text);
+  letter-spacing: 0.03em;
+}
+
+.experience__current-badge {
+  color: var(--persona-cyan);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.experience__card--current .experience__terminal-bar {
+  background: rgba(34, 211, 238, 0.12);
+  border-bottom-color: rgba(34, 211, 238, 0.25);
+}
+
+.experience__terminal-body {
+  padding: 1.25rem 1.5rem 1.25rem;
+  font-family: ui-monospace, 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+  position: relative;
+  overflow: hidden;
+}
+
+.experience__terminal-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(90deg, rgba(34, 211, 238, 0.025) 1px, transparent 1px),
+    linear-gradient(rgba(34, 211, 238, 0.025) 1px, transparent 1px);
+  background-size: 14px 14px;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.experience__role-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.experience__prompt {
+  color: var(--persona-cyan);
+  font-weight: 700;
+  user-select: none;
+}
+
+.experience__role {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--persona-text);
+  letter-spacing: 0.02em;
+}
+
+.experience__period {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--persona-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.experience__tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.65rem;
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+.experience__tech-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.7rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--persona-text-muted);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.experience__tech-item:hover {
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.3);
+  color: var(--persona-text);
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.12);
+  transform: translateY(-1px);
+}
+
+.experience__card:hover .experience__tech-item {
+  border-color: rgba(34, 211, 238, 0.2);
+}
+
+.experience__tech-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  filter: brightness(1.12);
+}
+
+.experience__tech-name {
+  font-weight: 500;
+  color: inherit;
+}
+
+.experience__cursor-line {
+  position: relative;
+}
+
+.experience__cursor-line .experience__prompt {
+  animation: experience-blink 1.2s step-end infinite;
+}
+
+@keyframes experience-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.experience__card--current {
+  border-color: rgba(34, 211, 238, 0.3);
+  box-shadow:
+    var(--glass-highlight),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(34, 211, 238, 0.25),
+    0 0 32px -8px rgba(34, 211, 238, 0.2);
+}
+
+.experience__card--current:hover {
+  box-shadow:
+    var(--glass-highlight),
+    0 20px 40px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(34, 211, 238, 0.4),
+    0 0 48px -12px var(--persona-glow);
+}
+
+.experience__card:hover {
+  transform: translateY(-2px);
+}
+
+.experience.animated-section--visible .experience__card:hover {
+  transform: translateY(-2px);
+}
+
+/* Highlights (if used later) */
+.experience__highlights {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.experience__highlights li {
+  font-size: 0.9rem;
+  color: var(--persona-text);
+  line-height: 1.5;
+  padding-left: 1.25rem;
+  position: relative;
+}
+
+.experience__highlights li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 0.35rem;
+  height: 0.35rem;
+  background: var(--persona-cyan);
+  border-radius: 50%;
+  opacity: 0.9;
+}

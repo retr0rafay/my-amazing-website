@@ -1,0 +1,185 @@
+/* Demon Slayer–inspired: water breathing, deep navy, cyan/teal accents, elegant flow */
+:root,
+[data-theme='dark'] {
+  --persona-bg-deep: #0a0e14;
+  --persona-bg-mid: #0f1624;
+  --persona-bg-card: #141d2e;
+  --persona-blue: #1e3a5f;
+  --persona-blue-bright: #2563eb;
+  --persona-cyan: #22d3ee;
+  --persona-cyan-dim: #06b6d4;
+  --persona-gold: #67e8f9;
+  --persona-gold-dim: #22d3ee;
+  --persona-text: #f0f9ff;
+  --persona-text-muted: #94a3b8;
+  --persona-border: rgba(34, 211, 238, 0.2);
+  --persona-glow: rgba(34, 211, 238, 0.35);
+  --persona-accent: #22d3ee;
+  --dbz-red: #f87171;
+  --hero-gradient: rgba(34, 211, 238, 0.12);
+  --hero-gradient-sub: rgba(30, 58, 95, 0.3);
+  --hero-gradient-dot: rgba(103, 232, 249, 0.06);
+  --font-sans: 'Outfit', system-ui, sans-serif;
+  --font-display: 'Bebas Neue', 'Outfit', system-ui, sans-serif;
+  /* Liquid glass */
+  --glass-bg: rgba(20, 29, 46, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-border-strong: rgba(34, 211, 238, 0.25);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+[data-theme='light'] {
+  --persona-bg-deep: #f0f9ff;
+  --persona-bg-mid: #e0f2fe;
+  --persona-bg-card: #ffffff;
+  --persona-blue: #0ea5e9;
+  --persona-blue-bright: #0284c7;
+  --persona-cyan: #0891b2;
+  --persona-cyan-dim: #0e7490;
+  --persona-gold: #06b6d4;
+  --persona-gold-dim: #0891b2;
+  --persona-text: #0c4a6e;
+  --persona-text-muted: #64748b;
+  --persona-border: rgba(8, 145, 178, 0.25);
+  --persona-glow: rgba(8, 145, 178, 0.2);
+  --persona-accent: #0891b2;
+  --dbz-red: #dc2626;
+  --hero-gradient: rgba(8, 145, 178, 0.1);
+  --hero-gradient-sub: rgba(14, 165, 233, 0.12);
+  --hero-gradient-dot: rgba(6, 182, 212, 0.08);
+  /* Liquid glass (light) */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-border-strong: rgba(8, 145, 178, 0.3);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--persona-bg-deep);
+  color: var(--persona-text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+.app {
+  min-height: 100vh;
+  position: relative;
+}
+
+.app > *:not(.theme-toggle) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Subtle water/flow background pattern */
+.app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -55deg,
+    transparent,
+    transparent 80px,
+    rgba(34, 211, 238, 0.015) 80px,
+    rgba(34, 211, 238, 0.015) 81px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Shared section layout */
+.section__title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  color: var(--persona-cyan);
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+/* Premium liquid glass cards – layered depth, accent, refined hover */
+.card {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow:
+    var(--glass-highlight),
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 8px rgba(0, 0, 0, 0.06),
+    0 16px 32px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.25s ease;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--persona-cyan),
+    var(--persona-gold),
+    transparent 70%
+  );
+  opacity: 0.9;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    var(--glass-highlight),
+    0 4px 8px rgba(0, 0, 0, 0.06),
+    0 24px 48px rgba(0, 0, 0, 0.12),
+    0 0 0 1px var(--glass-border-strong),
+    0 0 40px -8px var(--persona-glow);
+  border-color: var(--glass-border-strong);
+}
+
+/* Keyframes for dynamic elements */
+@keyframes dbz-pulse {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.92; filter: brightness(1.08); }
+}
+
+@keyframes dbz-glow {
+  0%, 100% { box-shadow: 0 0 20px var(--persona-glow); }
+  50% { box-shadow: 0 0 32px var(--persona-glow); }
+}
+
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

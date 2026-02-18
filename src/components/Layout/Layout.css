@@ -1,0 +1,10 @@
+.layout {
+  min-height: 100vh;
+  position: relative;
+}
+
+.layout__main {
+  position: relative;
+  z-index: 1;
+  padding-top: 3.5rem;
+}

@@ -1,0 +1,121 @@
+.education.section {
+  padding: 4rem 1.5rem;
+  max-width: 56rem;
+  margin: 0 auto;
+}
+
+.education__grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.education__card {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.education.animated-section--visible .education__card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.education.animated-section--visible .education__card:nth-child(1) { transition-delay: 0.08s; }
+.education.animated-section--visible .education__card:nth-child(2) { transition-delay: 0.18s; }
+
+@media (min-width: 640px) {
+  .education__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Terminal window */
+.education__terminal {
+  padding: 0;
+  overflow: hidden;
+}
+
+.education__terminal::before {
+  display: none;
+}
+
+.education__terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.education__terminal-dots {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.education__terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.education__terminal-dot--red {
+  background: #ff5f56;
+}
+
+.education__terminal-dot--yellow {
+  background: #ffbd2e;
+}
+
+.education__terminal-dot--green {
+  background: #27c93f;
+}
+
+.education__terminal-title {
+  font-family: ui-monospace, 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+  font-size: 0.7rem;
+  color: var(--persona-text-muted);
+  letter-spacing: 0.02em;
+}
+
+.education__terminal-body {
+  padding: 1rem 1.25rem 1.25rem;
+  font-family: ui-monospace, 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+  font-size: 0.8rem;
+  line-height: 1.65;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.education__terminal-line {
+  margin-bottom: 0.25rem;
+}
+
+.education__terminal-line:last-child {
+  margin-bottom: 0;
+}
+
+.education__terminal-prompt {
+  color: var(--persona-cyan);
+  margin-right: 0.5rem;
+  user-select: none;
+}
+
+.education__terminal-cmd {
+  color: var(--persona-text-muted);
+}
+
+.education__terminal-line--output {
+  padding-left: 1.25rem;
+  color: var(--persona-text);
+  word-break: break-word;
+}
+
+.education__terminal-label {
+  color: var(--persona-cyan);
+  font-weight: 600;
+  margin-right: 0.35rem;
+}
+
+.education__card:hover .education__terminal-body {
+  background: rgba(0, 0, 0, 0.3);
+}
