@@ -54,7 +54,6 @@ export default function HelloWorldArticle() {
         </p>
         <p>
         One thing to note is that I will NEVER use AI to write my posts. I wholeheartedly believe that AI is a powerful tool that can be used to help us, but it should never be used to replace human thought.
-
         </p>
         <p>
           In my free time, I like to spend time with my family, exercise, play video games and explore different parks. I hope to one day head to Yosemite and YellowStone National Park!

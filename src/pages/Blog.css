@@ -173,6 +173,125 @@
   margin-bottom: 0.35rem;
 }
 
+.article__body h3,
+.article__subtitle {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--persona-cyan);
+  margin: 1.75rem 0 0.5rem 0;
+}
+
+.article__body h3:first-of-type,
+.article__subtitle:first-of-type {
+  margin-top: 1rem;
+}
+
+/* Reusable inline code / file reference style for blog posts */
+.article__body code,
+.article__body .code-ref,
+.code-ref {
+  font-family: ui-monospace, 'SF Mono', 'Monaco', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.9em;
+  padding: 0.15em 0.45em;
+  background: var(--persona-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  color: var(--persona-cyan);
+}
+
+/* Reusable link style for blog posts: nice look + hover tooltip */
+.article__body a,
+.article__link,
+.link--post {
+  --link-underline: var(--persona-cyan);
+  position: relative;
+  color: var(--persona-cyan);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid var(--link-underline);
+  padding-bottom: 1px;
+  transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.article__body a:hover,
+.article__link:hover,
+.link--post:hover {
+  color: var(--persona-text);
+  border-bottom-color: transparent;
+  box-shadow: 0 2px 0 0 var(--persona-cyan);
+}
+
+/* Hover tooltip: shows URL (reusable for any .link--post or .article__body a) */
+.article__body a[href]::after,
+.article__link[href]::after,
+.link--post[href]::after {
+  content: attr(href);
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  max-width:  min(90vw, 420px);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--persona-text);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  word-break: break-all;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.article__body a[href]:hover::after,
+.article__link[href]:hover::after,
+.link--post[href]:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Slight spacing so tooltip doesn’t overlap the link */
+.article__body a[href],
+.article__link[href],
+.link--post[href] {
+  display: inline;
+}
+
+/* When using LinkWithPreview, hide the CSS-only URL tooltip */
+.link-preview-wrap .article__link[href]::after,
+.link-preview-wrap .link--post[href]::after {
+  display: none;
+}
+
+.article__figure {
+  margin: 1.5rem 0;
+}
+
+.article__img {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+}
+
+.article__figcaption {
+  font-size: 0.85rem;
+  color: var(--persona-text-muted);
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
 .article__companies {
   list-style: none;
   padding-left: 0;
