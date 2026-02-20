@@ -1,10 +1,16 @@
 import { Link } from 'react-router-dom'
+import SEO from '../components/SEO/SEO'
 import { articles } from '../blog/articles'
 import './Blog.css'
 
 export default function Blog() {
   return (
     <main className="blog page">
+      <SEO
+        title="Blog"
+        description="Writings and thoughts on tech, software engineering, and more."
+        path="/blog"
+      />
       <div className="blog__inner">
         <header className="blog__header">
           <h1 className="blog__title">Blog</h1>

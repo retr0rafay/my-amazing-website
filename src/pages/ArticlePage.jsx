@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
+import SEO from '../components/SEO/SEO'
 import { getArticleBySlug } from '../blog/articles'
 import './Blog.css'
 
@@ -9,6 +10,7 @@ export default function ArticlePage() {
   if (!article) {
     return (
       <main className="blog page">
+        <SEO title="Article not found" />
         <div className="blog__inner">
           <p className="blog__empty">Article not found.</p>
           <Link to="/blog" className="blog__back">
@@ -19,10 +21,15 @@ export default function ArticlePage() {
     )
   }
 
-  const { Component } = article
+  const { Component, meta } = article
 
   return (
     <main className="blog page">
+      <SEO
+        title={meta.title}
+        description={meta.preview}
+        path={`/blog/${slug}`}
+      />
       <div className="blog__inner">
         <Link to="/blog" className="blog__back">
           ← Back to Blog
