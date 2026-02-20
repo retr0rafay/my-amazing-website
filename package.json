@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/generate-articles-meta.cjs && vite build",
     "preview": "vite preview",
-    "start": "serve -s dist -l $PORT"
+    "start": "node server.js"
   },
   "dependencies": {
+    "express": "^4.21.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-helmet-async": "^2.0.5",

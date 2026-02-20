@@ -1,0 +1,14 @@
+[
+  {
+    "slug": "hello-world",
+    "title": "Hello, World!",
+    "date": "2025-02-18",
+    "preview": "For those of you who are visiting, I've been a software engineer for almost 10 years as of this article's publishing and I've worked at a variety of companies..."
+  },
+  {
+    "slug": "software-engineers-in-the-age-of-ai",
+    "title": "Software Engineers in the Age of AI",
+    "date": "2026-02-20",
+    "preview": "I had been writing code line by line for as long as I can remember. Whenever I would get stuck, I would go to StackOverflow to see if anyone had gone through the same issue. Never did I think that I could receive help from an AI..."
+  }
+]
