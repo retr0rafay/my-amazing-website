@@ -15,13 +15,22 @@ function getBaseUrl() {
 /**
  * Reusable SEO / link preview component. Use on each page so shared links
  * show the right title, description, and image (Open Graph + Twitter Card).
+ * For articles, pass author and publishedTime so LinkedIn etc. show author and date.
  */
-export default function SEO({ title, description, image = DEFAULT_IMAGE, path = '' }) {
+export default function SEO({
+  title,
+  description,
+  image = DEFAULT_IMAGE,
+  path = '',
+  author,
+  publishedTime,
+}) {
   const baseUrl = getBaseUrl()
   const fullUrl = path ? `${baseUrl}${path.startsWith('/') ? path : `/${path}`}` : baseUrl
   const imageUrl = image.startsWith('http') ? image : `${baseUrl}${image.startsWith('/') ? image : `/${image}`}`
   const displayTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} | Portfolio`
   const desc = description || `Software engineer portfolio and blog — Rafay Syed.`
+  const isArticle = author || publishedTime
 
   return (
     <Helmet>
@@ -29,12 +38,16 @@ export default function SEO({ title, description, image = DEFAULT_IMAGE, path = 
       <meta name="description" content={desc} />
 
       {/* Open Graph (Facebook, LinkedIn, etc.) */}
-      <meta property="og:type" content="website" />
+      <meta property="og:type" content={isArticle ? 'article' : 'website'} />
       <meta property="og:url" content={fullUrl} />
       <meta property="og:title" content={displayTitle} />
       <meta property="og:description" content={desc} />
       <meta property="og:image" content={imageUrl} />
       <meta property="og:site_name" content={SITE_NAME} />
+      {author && <meta property="article:author" content={author} />}
+      {publishedTime && (
+        <meta property="article:published_time" content={publishedTime} />
+      )}
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />

@@ -13,6 +13,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const app = express()
 const DIST = path.join(__dirname, 'dist')
 const SITE_NAME = 'Rafay Syed'
+const AUTHOR = 'Rafay Syed'
 const DEFAULT_IMAGE = '/hero-illustration.png'
 
 // Load article meta (written at build time)
@@ -50,11 +51,15 @@ function getMetaForPath(pathname, baseUrl) {
     const slug = blogMatch[1]
     const article = articlesMeta.find((a) => a.slug === slug)
     if (article) {
+      const publishedTime = article.date ? `${article.date}T00:00:00Z` : null
       return {
+        type: 'article',
         title: `${article.title} | ${SITE_NAME}`,
         description: article.preview || article.title,
         image: `${baseUrl}${DEFAULT_IMAGE}`,
         url: `${baseUrl}/blog/${slug}`,
+        author: AUTHOR,
+        publishedTime,
       }
     }
   }
@@ -63,13 +68,23 @@ function getMetaForPath(pathname, baseUrl) {
 
 function injectMeta(html, meta) {
   const titleTag = `<title>${escapeHtml(meta.title)}</title>`
-  const ogTags = `
-    <meta property="og:type" content="website" />
+  const ogType = meta.type === 'article' ? 'article' : 'website'
+  let ogTags = `
+    <meta property="og:type" content="${ogType}" />
     <meta property="og:url" content="${escapeHtml(meta.url)}" />
     <meta property="og:title" content="${escapeHtml(meta.title)}" />
     <meta property="og:description" content="${escapeHtml(meta.description)}" />
     <meta property="og:image" content="${escapeHtml(meta.image)}" />
-    <meta property="og:site_name" content="${escapeHtml(SITE_NAME)}" />
+    <meta property="og:site_name" content="${escapeHtml(SITE_NAME)}" />`
+  if (meta.author) {
+    ogTags += `
+    <meta property="article:author" content="${escapeHtml(meta.author)}" />`
+  }
+  if (meta.publishedTime) {
+    ogTags += `
+    <meta property="article:published_time" content="${escapeHtml(meta.publishedTime)}" />`
+  }
+  ogTags += `
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="${escapeHtml(meta.url)}" />
     <meta name="twitter:title" content="${escapeHtml(meta.title)}" />

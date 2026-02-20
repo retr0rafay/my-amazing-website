@@ -136,12 +136,20 @@
   border-bottom: 1px solid var(--glass-border);
 }
 
+.article__header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.35rem;
+}
+
 .article__title {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--persona-text);
   letter-spacing: 0.02em;
-  margin: 0 0 0.35rem 0;
+  margin: 0;
 }
 
 .article__date {

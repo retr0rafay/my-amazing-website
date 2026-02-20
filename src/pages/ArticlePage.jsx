@@ -29,6 +29,8 @@ export default function ArticlePage() {
         title={meta.title}
         description={meta.preview}
         path={`/blog/${slug}`}
+        author="Rafay Syed"
+        publishedTime={meta.date ? `${meta.date}T00:00:00Z` : undefined}
       />
       <div className="blog__inner">
         <Link to="/blog" className="blog__back">

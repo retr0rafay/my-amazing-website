@@ -2,6 +2,8 @@
  * Hello, World! — first blog post.
  */
 
+import ShareButton from '../../components/ShareButton/ShareButton'
+
 const LOGOS_BASE = '/assets/companies'
 
 const companies = [
@@ -25,7 +27,10 @@ export default function HelloWorldArticle() {
   return (
     <article className="article">
       <header className="article__header">
-        <h2 className="article__title">{meta.title}</h2>
+        <div className="article__header-row">
+          <h2 className="article__title">{meta.title}</h2>
+          <ShareButton />
+        </div>
         <time className="article__date" dateTime={meta.date}>
           {meta.date}
         </time>
