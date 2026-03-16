@@ -3,14 +3,19 @@
  * for crawlers (LinkedIn, Facebook, Twitter, etc.) that don't run JavaScript.
  * Set SITE_URL in production (e.g. https://www.rafaysyed.dev) for correct absolute URLs.
  */
+import 'dotenv/config'
 import express from 'express'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
+import gamingRouter from './api/gaming.js'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
 const app = express()
+
+// API (PSN gaming) before static so /api/gaming is hit
+app.use('/api', gamingRouter)
 const DIST = path.join(__dirname, 'dist')
 const SITE_NAME = 'Rafay Syed'
 const AUTHOR = 'Rafay Syed'
@@ -44,6 +49,14 @@ function getMetaForPath(pathname, baseUrl) {
       description: 'Writings and thoughts on tech, software engineering, and more.',
       image: `${baseUrl}${DEFAULT_IMAGE}`,
       url: `${baseUrl}/blog`,
+    }
+  }
+  if (pathname === '/gaming') {
+    return {
+      title: `Gaming | ${SITE_NAME}`,
+      description: 'Recently played PlayStation games and playtime.',
+      image: `${baseUrl}${DEFAULT_IMAGE}`,
+      url: `${baseUrl}/gaming`,
     }
   }
   const blogMatch = pathname.match(/^\/blog\/([^/]+)\/?$/)

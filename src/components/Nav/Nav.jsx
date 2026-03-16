@@ -18,6 +18,12 @@ export default function Nav() {
         >
           Blog
         </NavLink>
+        <NavLink
+          to="/gaming"
+          className={({ isActive }) => `nav__link ${isActive ? 'nav__link--active' : ''}`}
+        >
+          Gaming
+        </NavLink>
       </div>
     </nav>
   )
