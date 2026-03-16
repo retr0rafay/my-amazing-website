@@ -177,6 +177,11 @@
   padding-left: 1.5rem;
 }
 
+.article__body ol {
+  margin: 0 0 1rem 0;
+  padding-left: 1.75rem;
+}
+
 .article__body li {
   margin-bottom: 0.35rem;
 }
@@ -283,6 +288,7 @@
 
 .article__figure {
   margin: 1.5rem 0;
+  text-align: center;
 }
 
 .article__img {
@@ -291,6 +297,7 @@
   height: auto;
   border-radius: 12px;
   border: 1px solid var(--glass-border);
+  display: inline-block;
 }
 
 .article__figcaption {

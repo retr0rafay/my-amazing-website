@@ -4,8 +4,14 @@
 
 import HelloWorldArticle, { meta as helloWorldMeta } from './hello-world'
 import SoftwareEngineersAgeOfAIArticle, { meta as softwareEngineersMeta } from './software-engineers-age-of-ai'
+import JuniorSoftwareEngineersInTheAIEraArticle, { meta as juniorEngineersMeta } from './junior-software-engineers-in-the-ai-era'
 
 export const articles = [
+  {
+    slug: juniorEngineersMeta.slug,
+    meta: juniorEngineersMeta,
+    Component: JuniorSoftwareEngineersInTheAIEraArticle,
+  },
   {
     slug: softwareEngineersMeta.slug,
     meta: softwareEngineersMeta,
