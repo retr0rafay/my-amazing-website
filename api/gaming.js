@@ -3,12 +3,14 @@
  * Set PSN_NPSSO in env (get from https://ca.account.sony.com/api/v1/ssocookie when logged into PlayStation).
  */
 import express from 'express'
-import {
+import psnApi from 'psn-api'
+
+const {
   exchangeNpssoForAccessCode,
   exchangeAccessCodeForAuthTokens,
   exchangeRefreshTokenForAuthTokens,
   getUserPlayedGames,
-} from 'psn-api'
+} = psnApi
 
 const router = express.Router()
 
