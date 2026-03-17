@@ -2,15 +2,16 @@
  * PSN Gaming API: last 10 played games with cover art and hours.
  * Set PSN_NPSSO in env (get from https://ca.account.sony.com/api/v1/ssocookie when logged into PlayStation).
  */
+import { createRequire } from 'module'
 import express from 'express'
-import psnApi from 'psn-api'
 
+const require = createRequire(import.meta.url)
 const {
   exchangeNpssoForAccessCode,
   exchangeAccessCodeForAuthTokens,
   exchangeRefreshTokenForAuthTokens,
   getUserPlayedGames,
-} = psnApi
+} = require('psn-api')
 
 const router = express.Router()
 
