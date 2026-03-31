@@ -24,6 +24,12 @@ export default function Nav() {
         >
           Gaming
         </NavLink>
+        <NavLink
+          to="/my-life"
+          className={({ isActive }) => `nav__link ${isActive ? 'nav__link--active' : ''}`}
+        >
+          My Life
+        </NavLink>
       </div>
     </nav>
   )

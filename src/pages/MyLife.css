@@ -1,0 +1,211 @@
+.my-life.page {
+  width: 100%;
+}
+
+.my-life__inner {
+  width: min(980px, 100% - 1rem);
+  margin: 0 auto;
+}
+
+.my-life__header {
+  margin: 1rem 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.my-life__title {
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.my-life__subtitle {
+  margin-top: 0.35rem;
+  opacity: 0.78;
+  font-size: 0.95rem;
+}
+
+.my-life__count {
+  opacity: 0.8;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.my-life__state {
+  opacity: 0.85;
+}
+
+.my-life__grid {
+  list-style: none;
+  padding: 0;
+  margin: 1.1rem 0 0;
+  display: grid;
+  gap: 0.3rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.my-life__card {
+  border: 1px solid rgba(130, 160, 180, 0.14);
+  border-radius: 8px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--persona-bg-card) 92%, transparent);
+  position: relative;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.my-life__media-btn {
+  appearance: none;
+  border: 0;
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  cursor: zoom-in;
+  background: transparent;
+}
+
+.my-life__media {
+  width: 100%;
+  display: block;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: rgba(0, 0, 0, 0.35);
+  transition: transform 0.35s ease;
+}
+
+.my-life__card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(137, 198, 226, 0.34);
+}
+
+.my-life__card:hover .my-life__media {
+  transform: scale(1.02);
+}
+
+.my-life__caption-wrap {
+  margin: 0;
+  padding: 0.62rem 0.7rem 0.72rem;
+  border-top: 1px solid rgba(130, 160, 180, 0.14);
+}
+
+.my-life__caption-inline {
+  margin: 0;
+  line-height: 1.45;
+  font-size: 0.84rem;
+  color: var(--persona-text);
+}
+
+.my-life__caption-author {
+  font-weight: 700;
+  margin-right: 0.18rem;
+}
+
+.my-life__caption-toggle {
+  margin-top: 0.22rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--persona-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .my-life__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .my-life__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.my-life__modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 8, 18, 0.74);
+  display: grid;
+  place-items: center;
+  z-index: 40;
+  padding: 1rem;
+}
+
+.my-life__modal-card {
+  width: min(920px, 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--persona-border);
+  background: color-mix(in srgb, var(--persona-bg-card) 92%, transparent);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.my-life__modal-media {
+  width: 100%;
+  max-height: 76vh;
+  display: block;
+  object-fit: contain;
+  background: color-mix(in srgb, var(--persona-bg-deep) 92%, black);
+}
+
+.my-life__modal-meta {
+  padding: 1rem 1.05rem 1.15rem;
+}
+
+.my-life__modal-meta p {
+  margin: 0 0 0.55rem;
+  line-height: 1.55;
+  font-size: 0.96rem;
+  color: var(--persona-text);
+}
+
+.my-life__modal-meta time {
+  color: var(--persona-text-muted);
+  font-size: 0.83rem;
+  letter-spacing: 0.01em;
+}
+
+.my-life__delete-btn {
+  margin-top: 0.95rem;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 106px;
+  border: 1px solid rgba(255, 98, 98, 0.5);
+  background: linear-gradient(180deg, rgba(255, 118, 118, 0.22), rgba(132, 25, 30, 0.32));
+  color: #ffe5e5;
+  border-radius: 999px;
+  padding: 0.48rem 0.95rem;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+  box-shadow: 0 6px 16px rgba(135, 20, 26, 0.2);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.my-life__delete-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(135, 20, 26, 0.3);
+  filter: saturate(1.08);
+}
+
+.my-life__delete-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+[data-theme='light'] .my-life__delete-btn {
+  color: #7f1d1d;
+  border-color: rgba(220, 38, 38, 0.35);
+  background: linear-gradient(180deg, rgba(254, 202, 202, 0.6), rgba(254, 226, 226, 0.4));
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.12);
+}
+
+[data-theme='light'] .my-life__modal {
+  background: rgba(10, 20, 32, 0.42);
+}
