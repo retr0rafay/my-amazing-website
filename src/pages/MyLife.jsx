@@ -177,12 +177,12 @@ export default function MyLife() {
                 )}
               </div>
               {hasGiscusConfig && (
-                <div className="my-life__comments">
+                <div className="my-life__comments" aria-label="Discussion for this post">
                   <div className="my-life__comments-head">
-                    <h3 className="my-life__comments-title">Comments</h3>
+                    <h3 className="my-life__comments-title">Discussion</h3>
                     <span className="my-life__comments-hint">GitHub</span>
                   </div>
-                  <p className="my-life__comments-sub">Sign in to join the thread for this post.</p>
+                  <p className="my-life__comments-sub">Same thread as this memory — sign in with GitHub to reply.</p>
                   <div className="my-life__comments-body">
                     <Giscus
                       id={`my-life-comments-${active.id}`}

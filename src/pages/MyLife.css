@@ -200,6 +200,10 @@
   letter-spacing: 0.01em;
 }
 
+.my-life__modal-side:has(.my-life__comments) .my-life__modal-meta {
+  border-bottom: none;
+}
+
 .my-life__delete-btn {
   margin-top: 0.95rem;
   margin-left: auto;
@@ -238,6 +242,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border-top: 1px solid color-mix(in srgb, var(--persona-border) 48%, transparent);
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--persona-bg-card) 88%, transparent) 0%,
@@ -337,45 +342,120 @@
 }
 
 @media (max-width: 900px) {
-  /* Tall cards + mobile URL bar: centering clips the modal; anchor to top and scroll the overlay */
+  /*
+    Full-viewport sheet: media stays visible, caption + discussion scroll together as one panel.
+    Avoids overlay scroll + flex centering clipping the sheet on mobile browsers.
+  */
   .my-life__modal {
-    align-items: flex-start;
-    justify-content: center;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0;
+    overflow: hidden;
+    overscroll-behavior: contain;
   }
 
   .my-life__modal-card {
-    width: min(720px, 96vw);
-    grid-template-columns: 1fr;
-    height: auto;
-    min-height: 0;
-    /* Let caption + comments grow; whole card scrolls inside overlay (max-height) */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    box-sizing: border-box;
+    /* Stable viewport height + safe areas (notch / home indicator) */
+    height: 100dvh;
+    height: 100svh;
     max-height: none;
-    overflow: visible;
-    margin-bottom: max(0.85rem, env(safe-area-inset-bottom, 0px));
+    min-height: 0;
+    overflow: hidden;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 
   .my-life__modal-media-wrap {
-    /* Reset desktop min-height: 300px — on short viewports it stole space and clipped the sheet */
-    min-height: unset;
-    height: min(52dvh, 400px);
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    width: 100%;
+    /* Bounded stage so the scrollable detail panel always has room */
+    height: clamp(180px, 40dvh, 360px);
   }
 
+  .my-life__modal-media {
+    object-fit: contain;
+    background: color-mix(in srgb, var(--persona-bg-deep) 94%, black);
+  }
+
+  /* One surface: caption flows into discussion */
   .my-life__modal-side {
-    border-left: 0;
-    border-top: 1px solid color-mix(in srgb, var(--persona-border) 75%, transparent);
-    flex-shrink: 0;
-    /* Removed max-height: 36dvh — it clipped caption + Giscus; side grows, overlay scrolls */
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+    border-left: none;
+    border-top: 1px solid color-mix(in srgb, var(--persona-border) 55%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--persona-bg-card) 94%, transparent) 0%,
+      color-mix(in srgb, var(--persona-bg-mid) 72%, transparent) 100%
+    );
+  }
+
+  .my-life__modal-meta {
+    border-bottom: none;
+    background: transparent;
+    padding: 1rem 1rem 0.85rem;
+  }
+
+  .my-life__modal-side:has(.my-life__comments) .my-life__modal-meta {
+    padding-bottom: 0.35rem;
   }
 
   .my-life__comments {
-    /* Allow section to size to content; inner body still scrolls long Giscus threads */
-    overflow: visible;
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     min-height: 0;
+    overflow: visible;
+    padding: 0 0 1rem;
+    background: transparent;
+    border-top: 1px solid color-mix(in srgb, var(--persona-border) 38%, transparent);
   }
 
+  .my-life__comments-head {
+    padding: 0.85rem 1rem 0.35rem;
+  }
+
+  .my-life__comments-sub {
+    margin: 0 1rem 0.75rem;
+  }
+
+  /* Flush embed — scroll is the whole side panel, not a nested box */
   .my-life__comments-body {
-    max-height: min(45dvh, 320px);
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0.35rem 0.75rem 0.5rem;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    max-height: none;
+    overflow: visible;
+  }
+
+  [data-theme='light'] .my-life__modal-side {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 248, 252, 0.96) 100%);
+  }
+
+  [data-theme='light'] .my-life__comments {
+    border-top-color: rgba(15, 23, 42, 0.08);
+  }
+
+  [data-theme='light'] .my-life__comments-body {
+    background: transparent;
+    box-shadow: none;
   }
 }
