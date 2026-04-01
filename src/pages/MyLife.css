@@ -133,51 +133,57 @@
   justify-content: center;
   /* Above fixed nav (9998) and theme toggle (9999) */
   z-index: 10050;
-  padding: calc(4.75rem + env(safe-area-inset-top, 0px)) 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  padding: calc(0.85rem + env(safe-area-inset-top, 0px)) 0.85rem calc(0.85rem + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
 }
 
 .my-life__modal-card {
-  width: min(720px, 100%);
-  max-width: min(92vw, 720px);
-  max-height: min(92vh, calc(100vh - 5.5rem));
-  max-height: min(92dvh, calc(100dvh - 5.5rem));
-  display: flex;
-  flex-direction: column;
-  border-radius: 16px;
-  overflow: hidden;
+  width: min(1060px, 100%);
+  max-width: min(96vw, 1060px);
+  height: min(92vh, 860px);
+  height: min(92dvh, 860px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  border-radius: 14px;
+  overflow: auto;
   border: 1px solid var(--persona-border);
   background: color-mix(in srgb, var(--persona-bg-card) 92%, transparent);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  scrollbar-width: thin;
 }
 
 /* Fixed “stage” so tall photos/videos never fight the nav or overflow oddly */
 .my-life__modal-media-wrap {
-  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: min(56vh, calc(100vh - 13rem));
-  height: min(56dvh, calc(100dvh - 13rem));
-  min-height: 200px;
-  max-height: min(56vh, calc(100vh - 13rem));
-  max-height: min(56dvh, calc(100dvh - 13rem));
+  height: 100%;
+  min-height: 300px;
   background: color-mix(in srgb, var(--persona-bg-deep) 92%, black);
 }
 
 .my-life__modal-media {
-  width: auto;
-  height: auto;
+  width: 100%;
+  height: 100%;
   max-width: 100%;
   max-height: 100%;
   display: block;
-  object-fit: contain;
+  object-fit: cover;
   background: transparent;
+}
+
+.my-life__modal-side {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-left: 1px solid color-mix(in srgb, var(--persona-border) 75%, transparent);
 }
 
 .my-life__modal-meta {
   padding: 1rem 1.05rem 1.15rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--persona-border) 75%, transparent);
+  background: color-mix(in srgb, var(--persona-bg-card) 96%, transparent);
 }
 
 .my-life__modal-meta p {
@@ -224,6 +230,84 @@
   cursor: not-allowed;
 }
 
+.my-life__comments {
+  padding: 0 0 0.85rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--persona-bg-card) 88%, transparent) 0%,
+    color-mix(in srgb, var(--persona-bg-mid) 55%, transparent) 100%
+  );
+  scrollbar-width: thin;
+}
+
+.my-life__comments-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem 0.55rem;
+  flex-shrink: 0;
+}
+
+.my-life__comments-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--persona-cyan-dim);
+}
+
+.my-life__comments-hint {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  color: var(--persona-text);
+  background: color-mix(in srgb, var(--persona-cyan) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--persona-cyan) 28%, transparent);
+}
+
+.my-life__comments-sub {
+  margin: 0 1rem 0.65rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--persona-text-muted);
+  flex-shrink: 0;
+}
+
+.my-life__comments-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 0.65rem 0.35rem;
+  padding: 0.65rem 0.7rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--persona-border) 65%, transparent);
+  background: color-mix(in srgb, var(--persona-bg-deep) 35%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.18);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.my-life__comments-body .giscus,
+.my-life__comments-body .giscus-frame {
+  width: 100% !important;
+}
+
+.my-life__comments-body iframe {
+  border-radius: 8px;
+}
+
 [data-theme='light'] .my-life__delete-btn {
   color: #7f1d1d;
   border-color: rgba(220, 38, 38, 0.35);
@@ -233,4 +317,39 @@
 
 [data-theme='light'] .my-life__modal {
   background: rgba(10, 20, 32, 0.42);
+}
+
+[data-theme='light'] .my-life__comments {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.97) 0%,
+    rgba(240, 248, 252, 0.94) 100%
+  );
+}
+
+[data-theme='light'] .my-life__comments-body {
+  border-color: rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 6px 20px rgba(15, 23, 42, 0.06);
+}
+
+@media (max-width: 900px) {
+  .my-life__modal-card {
+    width: min(720px, 96vw);
+    grid-template-columns: 1fr;
+    height: auto;
+    max-height: 92dvh;
+  }
+
+  .my-life__modal-media-wrap {
+    height: min(56dvh, 420px);
+  }
+
+  .my-life__modal-side {
+    border-left: 0;
+    border-top: 1px solid color-mix(in srgb, var(--persona-border) 75%, transparent);
+    max-height: 36dvh;
+  }
 }

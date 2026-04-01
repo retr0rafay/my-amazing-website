@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
+import Giscus from '@giscus/react'
 import SEO from '../components/SEO/SEO'
 import { auth } from '../lib/firebase'
+import { useTheme } from '../context/ThemeContext'
 import './MyLife.css'
 
 function parseAllowlist(value) {
@@ -12,6 +14,7 @@ function parseAllowlist(value) {
 }
 
 export default function MyLife() {
+  const { theme } = useTheme()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -22,6 +25,11 @@ export default function MyLife() {
 
   const ownerEmails = parseAllowlist(import.meta.env.VITE_OWNER_EMAILS)
   const ownerUids = parseAllowlist(import.meta.env.VITE_OWNER_UIDS)
+  const giscusRepo = import.meta.env.VITE_GISCUS_REPO
+  const giscusRepoId = import.meta.env.VITE_GISCUS_REPO_ID
+  const giscusCategory = import.meta.env.VITE_GISCUS_CATEGORY
+  const giscusCategoryId = import.meta.env.VITE_GISCUS_CATEGORY_ID
+  const hasGiscusConfig = !!(giscusRepo && giscusRepoId && giscusCategory && giscusCategoryId)
   const isOwner = !!user && (
     (user.email && ownerEmails.includes(user.email.toLowerCase())) ||
     (user.uid && ownerUids.includes(user.uid.toLowerCase()))
@@ -153,18 +161,47 @@ export default function MyLife() {
                 <img className="my-life__modal-media" src={active.mediaUrl} alt={active.caption || 'My Life post'} />
               )}
             </div>
-            <div className="my-life__modal-meta">
-              <p>{active.caption || 'No caption'}</p>
-              {active.createdAtMs ? <time>{new Date(active.createdAtMs).toLocaleString()}</time> : null}
-              {isOwner && (
-                <button
-                  className="my-life__delete-btn"
-                  type="button"
-                  disabled={deletingId === active.id}
-                  onClick={() => handleDelete(active.id)}
-                >
-                  {deletingId === active.id ? 'Deleting...' : 'Delete'}
-                </button>
+            <div className="my-life__modal-side">
+              <div className="my-life__modal-meta">
+                <p>{active.caption || 'No caption'}</p>
+                {active.createdAtMs ? <time>{new Date(active.createdAtMs).toLocaleString()}</time> : null}
+                {isOwner && (
+                  <button
+                    className="my-life__delete-btn"
+                    type="button"
+                    disabled={deletingId === active.id}
+                    onClick={() => handleDelete(active.id)}
+                  >
+                    {deletingId === active.id ? 'Deleting...' : 'Delete'}
+                  </button>
+                )}
+              </div>
+              {hasGiscusConfig && (
+                <div className="my-life__comments">
+                  <div className="my-life__comments-head">
+                    <h3 className="my-life__comments-title">Comments</h3>
+                    <span className="my-life__comments-hint">GitHub</span>
+                  </div>
+                  <p className="my-life__comments-sub">Sign in to join the thread for this post.</p>
+                  <div className="my-life__comments-body">
+                    <Giscus
+                      id={`my-life-comments-${active.id}`}
+                      repo={giscusRepo}
+                      repoId={giscusRepoId}
+                      category={giscusCategory}
+                      categoryId={giscusCategoryId}
+                      mapping="specific"
+                      term={`my-life:${active.id}`}
+                      strict="1"
+                      reactionsEnabled="1"
+                      emitMetadata="0"
+                      inputPosition="top"
+                      theme={theme === 'light' ? 'light' : 'dark_dimmed'}
+                      lang="en"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
               )}
             </div>
           </div>
