@@ -171,6 +171,8 @@ export default function MyLife() {
     setCommentsExpanded((prev) => ({ ...prev, [postId]: !prev[postId] }))
   }
 
+  const anyCommentsExpanded = Object.values(commentsExpanded).some(Boolean)
+
   function isCaptionLong(caption) {
     return (caption || '').trim().length > 110
   }
@@ -243,7 +245,7 @@ export default function MyLife() {
                 mapping="specific"
                 term={`my-life:${item.id}`}
                 strict="1"
-                reactionsEnabled="1"
+                reactionsEnabled="0"
                 emitMetadata="0"
                 inputPosition="top"
                 theme={theme === 'light' ? 'light' : 'dark_dimmed'}
@@ -313,7 +315,14 @@ export default function MyLife() {
               {visibleIndex + 1} / {items.length}
             </span>
           </header>
-          <div className="my-life__feed-scroll" ref={feedScrollRef}>
+          <div
+            className={
+              anyCommentsExpanded
+                ? 'my-life__feed-scroll my-life__feed-scroll--no-snap'
+                : 'my-life__feed-scroll'
+            }
+            ref={feedScrollRef}
+          >
             {items.map((item) => (
               <article
                 key={item.id}

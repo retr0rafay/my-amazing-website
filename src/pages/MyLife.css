@@ -222,9 +222,15 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* While discussion is open, snap fights nested scroll / taps — turn it off */
+.my-life__feed-scroll--no-snap {
+  scroll-snap-type: none;
+}
+
 .my-life__feed-slide {
   scroll-snap-align: start;
-  scroll-snap-stop: always;
+  /* "always" traps touch/scroll and blocks the caption+comments panel on mobile */
+  scroll-snap-stop: normal;
   min-height: 100dvh;
   min-height: 100svh;
   box-sizing: border-box;
@@ -484,6 +490,7 @@
   color: var(--persona-cyan-dim);
   cursor: pointer;
   font-family: inherit;
+  touch-action: manipulation;
 }
 
 .my-life__comments-preview-cta:hover {
@@ -561,6 +568,11 @@
 }
 
 @media (max-width: 900px) {
+  /* Softer snap between posts; mandatory still fights inner scroll — use proximity */
+  .my-life__feed-scroll:not(.my-life__feed-scroll--no-snap) {
+    scroll-snap-type: y proximity;
+  }
+
   .my-life__feed-slide-inner {
     display: flex;
     flex-direction: column;
@@ -613,7 +625,8 @@
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
+    /* Stop swipe from chaining to the outer feed (which was stealing scroll / snap) */
+    overscroll-behavior: contain;
     touch-action: pan-y;
     border-left: none;
     border-top: 1px solid color-mix(in srgb, var(--persona-border) 55%, transparent);
