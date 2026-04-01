@@ -6,5 +6,6 @@
 .layout__main {
   position: relative;
   z-index: 1;
-  padding-top: 3.5rem;
+  /* Fixed nav + optional notch: keep page content (e.g. first grid image) below the bar */
+  padding-top: calc(env(safe-area-inset-top, 0px) + 4rem);
 }

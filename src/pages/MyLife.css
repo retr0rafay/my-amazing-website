@@ -124,33 +124,127 @@
   }
 }
 
-.my-life__modal {
+/* Instagram-style full-screen feed: vertical scroll through every post */
+.my-life__feed {
   position: fixed;
   inset: 0;
-  background: rgba(2, 8, 18, 0.74);
+  z-index: 10050;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--persona-bg-deep) 96%, black);
+  overscroll-behavior: contain;
+  /* Reserve space matching the floating bar (safe area + bar + gradient) so media isn’t covered */
+  --my-life-feed-top-overlay: calc(env(safe-area-inset-top, 0px) + 3.1rem);
+}
+
+.my-life__feed-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
-  justify-content: center;
-  /* Above fixed nav (9998) and theme toggle (9999) */
-  z-index: 10050;
-  padding: calc(0.85rem + env(safe-area-inset-top, 0px)) 0.85rem calc(0.85rem + env(safe-area-inset-bottom, 0px));
+  justify-content: space-between;
+  gap: 1rem;
+  padding: calc(env(safe-area-inset-top, 0px) + 0.35rem) 1rem 1.35rem;
+  background: linear-gradient(
+    to bottom,
+    rgba(2, 8, 18, 0.92) 0%,
+    rgba(2, 8, 18, 0.45) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.my-life__feed-back,
+.my-life__feed-counter {
+  pointer-events: auto;
+}
+
+.my-life__feed-back {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 1.02rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.4rem 0.35rem 0.4rem 0.15rem;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.my-life__feed-back-arrow {
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1;
+  opacity: 0.95;
+}
+
+.my-life__feed-back-label {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  text-decoration-color: rgba(255, 255, 255, 0.35);
+}
+
+.my-life__feed-back:hover .my-life__feed-back-label {
+  text-decoration-color: rgba(255, 255, 255, 0.65);
+}
+
+.my-life__feed-back:hover {
+  opacity: 0.92;
+}
+
+.my-life__feed-back:focus-visible {
+  outline: 2px solid var(--persona-cyan, #6ec8e8);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.my-life__feed-counter {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.my-life__feed-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
+  scroll-snap-type: y mandatory;
   -webkit-overflow-scrolling: touch;
 }
 
-.my-life__modal-card {
-  width: min(1060px, 100%);
-  max-width: min(96vw, 1060px);
-  height: min(92vh, 860px);
-  height: min(92dvh, 860px);
+.my-life__feed-slide {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  min-height: 100dvh;
+  min-height: 100svh;
+  box-sizing: border-box;
+}
+
+.my-life__feed-slide-inner {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
-  border-radius: 14px;
-  overflow: auto;
-  border: 1px solid var(--persona-border);
+  width: 100%;
+  min-height: 100dvh;
+  min-height: 100svh;
+  max-width: min(1060px, 100%);
+  margin: 0 auto;
+  border: none;
   background: color-mix(in srgb, var(--persona-bg-card) 92%, transparent);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  scrollbar-width: thin;
+  overflow: hidden;
+  box-sizing: border-box;
+  box-shadow: none;
+  padding-top: var(--my-life-feed-top-overlay);
 }
 
 /* Fixed “stage” so tall photos/videos never fight the nav or overflow oddly */
@@ -165,13 +259,67 @@
 }
 
 .my-life__modal-media {
-  width: 100%;
-  height: 100%;
+  display: block;
+  margin: 0 auto;
+  width: auto;
+  height: auto;
   max-width: 100%;
   max-height: 100%;
-  display: block;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   background: transparent;
+}
+
+/*
+  Feed media: 4:5 frame, cover fill. Mobile: full width. Desktop: fixed width — same every post.
+*/
+.my-life__feed .my-life__modal-media-wrap {
+  display: block;
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: min(100%, 520px);
+  margin: 0 auto;
+  padding: 0;
+  aspect-ratio: 4 / 5;
+  height: auto;
+  max-height: min(78dvh, 900px);
+  background: #000;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.my-life__feed .my-life__modal-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Desktop: slides are only as tall as content (no huge empty band); fixed 4:5 frame width */
+@media (min-width: 901px) {
+  .my-life__feed-slide {
+    min-height: 0;
+    scroll-margin-bottom: 0.75rem;
+  }
+
+  .my-life__feed-slide-inner {
+    align-items: start;
+    min-height: 0;
+    padding-bottom: 1rem;
+  }
+
+  .my-life__feed .my-life__modal-media-wrap {
+    width: 480px;
+    max-width: min(480px, 100%);
+    max-height: none;
+    margin: 0 auto;
+  }
 }
 
 .my-life__modal-side {
@@ -314,15 +462,86 @@
   border-radius: 8px;
 }
 
+.my-life__comments-preview {
+  padding: 0.55rem 1rem 1rem;
+}
+
+.my-life__comments-preview-text {
+  margin: 0 0 0.6rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--persona-text-muted);
+}
+
+.my-life__comments-preview-cta {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--persona-cyan-dim);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.my-life__comments-preview-cta:hover {
+  text-decoration: underline;
+}
+
+.my-life__comments-collapse {
+  display: block;
+  margin: 0 1rem 0.45rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--persona-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.my-life__comments-collapse:hover {
+  color: var(--persona-text);
+}
+
+[data-theme='light'] .my-life__feed {
+  background: rgba(248, 252, 255, 0.98);
+}
+
+[data-theme='light'] .my-life__feed-bar {
+  background: linear-gradient(
+    to bottom,
+    rgba(248, 252, 255, 0.96) 0%,
+    rgba(248, 252, 255, 0.42) 55%,
+    transparent 100%
+  );
+}
+
+[data-theme='light'] .my-life__feed-back {
+  color: var(--persona-text);
+}
+
+[data-theme='light'] .my-life__feed-back-label {
+  text-decoration-color: rgba(15, 23, 42, 0.28);
+}
+
+[data-theme='light'] .my-life__feed-back:hover .my-life__feed-back-label {
+  text-decoration-color: rgba(15, 23, 42, 0.5);
+}
+
+[data-theme='light'] .my-life__feed-counter {
+  color: var(--persona-text-muted);
+}
+
 [data-theme='light'] .my-life__delete-btn {
   color: #7f1d1d;
   border-color: rgba(220, 38, 38, 0.35);
   background: linear-gradient(180deg, rgba(254, 202, 202, 0.6), rgba(254, 226, 226, 0.4));
   box-shadow: 0 6px 16px rgba(220, 38, 38, 0.12);
-}
-
-[data-theme='light'] .my-life__modal {
-  background: rgba(10, 20, 32, 0.42);
 }
 
 [data-theme='light'] .my-life__comments {
@@ -342,51 +561,50 @@
 }
 
 @media (max-width: 900px) {
-  /*
-    Full-viewport sheet: media stays visible, caption + discussion scroll together as one panel.
-    Avoids overlay scroll + flex centering clipping the sheet on mobile browsers.
-  */
-  .my-life__modal {
-    align-items: stretch;
-    justify-content: flex-start;
-    padding: 0;
-    overflow: hidden;
-    overscroll-behavior: contain;
-  }
-
-  .my-life__modal-card {
+  .my-life__feed-slide-inner {
     display: flex;
     flex-direction: column;
     width: 100%;
     max-width: none;
     margin: 0;
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-    box-sizing: border-box;
-    /* Stable viewport height + safe areas (notch / home indicator) */
-    height: 100dvh;
-    height: 100svh;
-    max-height: none;
-    min-height: 0;
+    min-height: 100dvh;
+    min-height: 100svh;
+    height: auto;
     overflow: hidden;
-    padding-top: env(safe-area-inset-top, 0px);
+    box-sizing: border-box;
+    /* padding-top: inherited from base — includes feed bar clearance + safe area */
     padding-bottom: env(safe-area-inset-bottom, 0px);
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
   }
 
   .my-life__modal-media-wrap {
+    --my-life-media-cap: min(56dvh, 520px);
     flex: 0 0 auto;
     width: 100%;
-    /* Bounded stage so the scrollable detail panel always has room */
-    height: clamp(180px, 40dvh, 360px);
+    min-height: min(160px, 28dvh);
+    max-height: var(--my-life-media-cap);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.65rem;
+    box-sizing: border-box;
   }
 
+  /*
+    Avoid width/height: 100% here: with object-fit: contain, percentage sizing often
+    clips or mis-scales on mobile; cap both dimensions explicitly instead.
+  */
   .my-life__modal-media {
+    max-width: 100%;
+    max-height: var(--my-life-media-cap);
+    width: auto;
+    height: auto;
     object-fit: contain;
     background: color-mix(in srgb, var(--persona-bg-deep) 94%, black);
   }
+
+  /* Feed uses global 4:5 Instagram frame — no extra mobile overrides */
 
   /* One surface: caption flows into discussion */
   .my-life__modal-side {
