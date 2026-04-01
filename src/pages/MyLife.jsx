@@ -146,11 +146,13 @@ export default function MyLife() {
       {active && (
         <div className="my-life__modal" onClick={() => setActive(null)}>
           <div className="my-life__modal-card" onClick={(e) => e.stopPropagation()}>
-            {active.mediaType === 'video' ? (
-              <video className="my-life__modal-media" controls autoPlay src={active.mediaUrl} />
-            ) : (
-              <img className="my-life__modal-media" src={active.mediaUrl} alt={active.caption || 'My Life post'} />
-            )}
+            <div className="my-life__modal-media-wrap">
+              {active.mediaType === 'video' ? (
+                <video className="my-life__modal-media" controls autoPlay src={active.mediaUrl} />
+              ) : (
+                <img className="my-life__modal-media" src={active.mediaUrl} alt={active.caption || 'My Life post'} />
+              )}
+            </div>
             <div className="my-life__modal-meta">
               <p>{active.caption || 'No caption'}</p>
               {active.createdAtMs ? <time>{new Date(active.createdAtMs).toLocaleString()}</time> : null}

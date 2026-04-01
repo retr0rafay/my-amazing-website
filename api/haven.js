@@ -89,6 +89,12 @@ function getStorageClient() {
   })
 }
 
+function getBaseUrl(req) {
+  const env = process.env.SITE_URL
+  if (env) return env.replace(/\/$/, '')
+  return `${req.protocol}://${req.get('host')}`
+}
+
 router.post('/haven/upload-url', requireOwner, async (req, res) => {
   try {
     const { filename, contentType, mediaType } = req.body || {}
@@ -201,6 +207,38 @@ router.get('/haven/posts', async (req, res) => {
   } catch (err) {
     console.error('[haven/posts:list]', err.message)
     return res.status(500).json({ error: 'Could not load posts' })
+  }
+})
+
+router.get('/haven/og-image', async (req, res) => {
+  try {
+    initFirebaseAdmin()
+    const db = getFirestore()
+    const storage = getStorageClient()
+    const bucketName = getBucketName()
+
+    const snap = await db.collection('havenPosts').orderBy('sortAt', 'desc').limit(20).get()
+    const post = snap.docs
+      .map((doc) => doc.data())
+      .find((data) => data?.objectPath && (data.mediaType === 'image' || data.mediaType === 'video'))
+
+    if (!post?.objectPath) {
+      const fallbackUrl = `${getBaseUrl(req)}/hero-illustration.png`
+      res.setHeader('Cache-Control', 'public, max-age=300')
+      return res.redirect(302, fallbackUrl)
+    }
+
+    const [signedUrl] = await storage.bucket(bucketName).file(post.objectPath).getSignedUrl({
+      version: 'v4',
+      action: 'read',
+      expires: Date.now() + 60 * 60 * 1000,
+    })
+    res.setHeader('Cache-Control', 'public, max-age=300')
+    return res.redirect(302, signedUrl)
+  } catch (err) {
+    console.error('[haven/og-image]', err.message)
+    const fallbackUrl = `${getBaseUrl(req)}/hero-illustration.png`
+    return res.redirect(302, fallbackUrl)
   }
 })
 
