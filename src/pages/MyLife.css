@@ -135,6 +135,7 @@
   z-index: 10050;
   padding: calc(0.85rem + env(safe-area-inset-top, 0px)) 0.85rem calc(0.85rem + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .my-life__modal-card {
@@ -336,20 +337,45 @@
 }
 
 @media (max-width: 900px) {
+  /* Tall cards + mobile URL bar: centering clips the modal; anchor to top and scroll the overlay */
+  .my-life__modal {
+    align-items: flex-start;
+    justify-content: center;
+  }
+
   .my-life__modal-card {
     width: min(720px, 96vw);
     grid-template-columns: 1fr;
     height: auto;
-    max-height: 92dvh;
+    min-height: 0;
+    /* Let caption + comments grow; whole card scrolls inside overlay (max-height) */
+    max-height: none;
+    overflow: visible;
+    margin-bottom: max(0.85rem, env(safe-area-inset-bottom, 0px));
   }
 
   .my-life__modal-media-wrap {
-    height: min(56dvh, 420px);
+    /* Reset desktop min-height: 300px — on short viewports it stole space and clipped the sheet */
+    min-height: unset;
+    height: min(52dvh, 400px);
+    flex-shrink: 0;
   }
 
   .my-life__modal-side {
     border-left: 0;
     border-top: 1px solid color-mix(in srgb, var(--persona-border) 75%, transparent);
-    max-height: 36dvh;
+    flex-shrink: 0;
+    /* Removed max-height: 36dvh — it clipped caption + Giscus; side grows, overlay scrolls */
+  }
+
+  .my-life__comments {
+    /* Allow section to size to content; inner body still scrolls long Giscus threads */
+    overflow: visible;
+    flex: 0 1 auto;
+    min-height: 0;
+  }
+
+  .my-life__comments-body {
+    max-height: min(45dvh, 320px);
   }
 }
