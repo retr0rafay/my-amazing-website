@@ -292,12 +292,25 @@
 }
 
 .article__img {
-  width: 100%;
-  max-width: 520px;
+  width: min(100%, 520px);
+  max-height: 420px;
   height: auto;
+  object-fit: contain;
   border-radius: 12px;
-  border: 1px solid var(--glass-border);
+  border: 0;
   display: inline-block;
+  cursor: zoom-in;
+  transform-origin: center center;
+  transition: transform 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+/* Reusable hover expand effect for all blog images (image only) */
+.article__img:hover,
+.article__img:focus-visible {
+  transform: scale(1.18);
+  z-index: 30;
 }
 
 .article__figcaption {
@@ -306,6 +319,43 @@
   margin-top: 0.5rem;
   font-style: italic;
 }
+
+.article__modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: rgba(0, 0, 0, 0.86);
+}
+
+.article__modal-img {
+  width: auto;
+  height: auto;
+  max-width: min(92vw, 1200px);
+  max-height: 86vh;
+  border-radius: 10px;
+  border: 0;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+}
+
+.article__modal-close {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
 
 .article__companies {
   list-style: none;
