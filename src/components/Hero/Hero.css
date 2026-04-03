@@ -2,8 +2,9 @@
   position: relative;
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
   overflow: hidden;
 }
 
@@ -17,6 +18,22 @@
   grid-template-columns: 1fr;
   gap: 2.5rem;
   align-items: center;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.hero__agent {
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1.5rem 2.5rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 900px) {
+  .hero__agent {
+    padding: 0 2.5rem 3rem;
+  }
 }
 
 @media (min-width: 900px) {

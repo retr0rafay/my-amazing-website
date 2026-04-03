@@ -1,0 +1,69 @@
+{
+  "name": "Rafay's Agent",
+  "description": "Personal AI agent for Rafay Syed — software engineer (GreenSpark Software), previously co-founder/CTO at Rounds.so and engineer at Flexbone; PlayStation gamer (handle retr0rafay); portfolio at rafaysyed.dev. Answers questions about Rafay and can be reached by other agents via JSON-RPC.",
+  "url": "https://rafaysyed.dev/api/a2a",
+  "supportedInterfaces": [
+    {
+      "url": "https://rafaysyed.dev/api/a2a",
+      "protocol": "jsonrpc",
+      "version": "2.0"
+    }
+  ],
+  "version": "1.0.0",
+  "provider": {
+    "organization": "Rafay Syed",
+    "url": "https://rafaysyed.dev"
+  },
+  "documentationUrl": "https://rafaysyed.dev/llms.txt",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "stateTransitionHistory": false
+  },
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["text/plain"],
+  "skills": [
+    {
+      "id": "about",
+      "name": "About Rafay",
+      "description": "Background, education, work history, and contact links.",
+      "tags": ["bio", "about", "contact"],
+      "examples": [
+        "Who is Rafay?",
+        "What does Rafay work on?",
+        "How can I reach Rafay?"
+      ]
+    },
+    {
+      "id": "software-engineering",
+      "name": "Software Engineering",
+      "description": "Full-stack development, TypeScript, React, Python, Java, cloud (AWS, GCP), startups.",
+      "tags": ["code", "development", "engineering"],
+      "examples": [
+        "What's Rafay's tech background?",
+        "Where has Rafay worked?"
+      ]
+    },
+    {
+      "id": "portfolio",
+      "name": "Portfolio & writing",
+      "description": "Personal site, blog, and public projects.",
+      "tags": ["portfolio", "blog", "rafaysyed.dev"],
+      "examples": [
+        "Does Rafay have a blog?",
+        "Where is Rafay's portfolio?"
+      ]
+    },
+    {
+      "id": "gaming",
+      "name": "PlayStation gaming",
+      "description": "Rafay plays on PlayStation; online handle retr0rafay. Recent activity may appear on rafaysyed.dev/gaming.",
+      "tags": ["playstation", "psn", "gaming"],
+      "examples": [
+        "What is Rafay's PlayStation handle?",
+        "Does Rafay game on PS?",
+        "Where can I see what Rafay has been playing?"
+      ]
+    }
+  ]
+}

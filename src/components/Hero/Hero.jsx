@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import AgentSection from '../AgentSection'
 import './Hero.css'
 
 const CAREER_START = new Date('2016-08-16T00:00:00')
@@ -98,6 +99,9 @@ export default function Hero() {
             />
           </div>
         </div>
+      </div>
+      <div className="hero__agent">
+        <AgentSection embedded />
       </div>
     </section>
   )

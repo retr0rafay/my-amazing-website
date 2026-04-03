@@ -34,8 +34,7 @@ const jobs = [
   {
     title: 'Software Engineer',
     company: 'Flexbone',
-    period: 'Oct. 2025 – Present',
-    current: true,
+    period: 'Oct. 2025 – Feb. 2026',
     tech: [
       { name: 'Python', slug: 'python' },
       { name: 'React', slug: 'react' },
@@ -45,7 +44,7 @@ const jobs = [
   {
     title: 'Co-Founder & CTO',
     company: 'Rounds.so',
-    period: 'Sep. 2024 – Present',
+    period: 'Sep. 2024 – Feb. 2026',
     tech: [
       { name: 'React', slug: 'react' },
       { name: 'Python', slug: 'python' },

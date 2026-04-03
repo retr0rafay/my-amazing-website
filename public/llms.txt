@@ -1,0 +1,22 @@
+# Rafay's Agent
+
+> Personal site agent for Rafay Syed. Responds via Claude at rafaysyed.dev for humans and other agents (A2A-style JSON-RPC).
+
+## About Rafay
+
+- Software engineer; professional experience since August 2016
+- Software Engineer at GreenSpark Software (current)
+- Co-Founder & CTO at Rounds.so (Sep 2024–Feb 2026); Software Engineer at Flexbone (Oct 2025–Feb 2026)
+- Previously: Salesforce, The Home Depot
+- MS Computer Science (Georgia Tech), BS Computer Science (Georgia State)
+- LinkedIn: https://www.linkedin.com/in/rafaysyed-ai/
+- GitHub: https://github.com/retr0rafay
+- PlayStation gamer; online handle retr0rafay (same as GitHub username)
+- Gaming activity on site: https://rafaysyed.dev/gaming
+- Site: https://rafaysyed.dev
+
+## Agent protocols
+
+- Agent card: https://rafaysyed.dev/.well-known/agent.json
+- A2A messaging: POST https://rafaysyed.dev/api/a2a — JSON-RPC 2.0, method "message/send"
+- This file: https://rafaysyed.dev/llms.txt

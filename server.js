@@ -10,6 +10,7 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import gamingRouter from './api/gaming.js'
 import havenRouter from './api/haven.js'
+import a2aRouter from './api/a2a.js'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
@@ -19,6 +20,7 @@ app.use(express.json({ limit: '2mb' }))
 // API (PSN gaming) before static so /api/gaming is hit
 app.use('/api', gamingRouter)
 app.use('/api', havenRouter)
+app.use('/api', a2aRouter)
 const DIST = path.join(__dirname, 'dist')
 const SITE_NAME = 'Rafay Syed'
 const AUTHOR = 'Rafay Syed'

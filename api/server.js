@@ -6,11 +6,13 @@ import 'dotenv/config'
 import express from 'express'
 import gamingRouter from './gaming.js'
 import havenRouter from './haven.js'
+import a2aRouter from './a2a.js'
 
 const app = express()
 app.use(express.json({ limit: '2mb' }))
 app.use('/api', gamingRouter)
 app.use('/api', havenRouter)
+app.use('/api', a2aRouter)
 
 const PORT = process.env.API_PORT || 3001
 app.listen(PORT, () => {
