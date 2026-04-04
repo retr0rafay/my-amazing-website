@@ -1,8 +1,35 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
+import ReactMarkdown from 'react-markdown'
+import remarkBreaks from 'remark-breaks'
 import SEO from '../components/SEO/SEO'
 import { auth, provider } from '../lib/firebase'
 import './RafayBot.css'
+
+function MessageBubble({ text, role, isError }) {
+  const useMd = role === 'assistant' && !isError
+  if (!useMd) {
+    return (
+      <div className="rafay-bot__bubble rafay-bot__bubble--plain">
+        <span className="rafay-bot__plain">{text}</span>
+      </div>
+    )
+  }
+  return (
+    <div className="rafay-bot__bubble rafay-bot__bubble--md">
+      <ReactMarkdown
+        remarkPlugins={[remarkBreaks]}
+        components={{
+          a: ({ node, ...props }) => (
+            <a {...props} target="_blank" rel="noopener noreferrer" />
+          ),
+        }}
+      >
+        {text}
+      </ReactMarkdown>
+    </div>
+  )
+}
 
 function parseAllowlist(value) {
   return (value || '')
@@ -106,7 +133,7 @@ export default function RafayBot() {
                   className={`rafay-bot__msg rafay-bot__msg--${msg.role}${msg.isError ? ' rafay-bot__msg--error' : ''}`}
                 >
                   <span className="rafay-bot__role">{msg.role === 'user' ? 'You' : 'Agent'}</span>
-                  <div className="rafay-bot__bubble">{msg.text}</div>
+                  <MessageBubble text={msg.text} role={msg.role} isError={msg.isError} />
                 </div>
               ))}
               {loading && (
