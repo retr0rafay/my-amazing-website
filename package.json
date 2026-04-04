@@ -7,7 +7,10 @@
     "dev": "concurrently \"vite\" \"node api/server.js\"",
     "build": "node scripts/generate-articles-meta.cjs && vite build",
     "preview": "vite preview",
-    "start": "node server.js"
+    "start": "node server.js",
+    "tesla-notify:run": "node scripts/run-tesla-notify-once.mjs",
+    "tesla:exchange": "node scripts/tesla-exchange-code.mjs",
+    "tesla:register": "node scripts/tesla-register-partner.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
@@ -17,6 +20,7 @@
     "express": "^4.21.0",
     "firebase": "^12.11.0",
     "firebase-admin": "^13.7.0",
+    "node-cron": "^3.0.3",
     "psn-api": "^2.18.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

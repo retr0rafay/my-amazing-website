@@ -5,6 +5,9 @@ node_modules/
 dist/
 dist-ssr/
 
+# Tesla Fleet rotated refresh token (written at runtime)
+data/
+
 # Local env files (API keys, secrets)
 .env
 .env.local

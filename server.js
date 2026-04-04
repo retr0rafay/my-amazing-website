@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url'
 import gamingRouter from './api/gaming.js'
 import havenRouter from './api/haven.js'
 import a2aRouter from './api/a2a.js'
+import { setupTeslaChargeNotifications } from './api/teslaChargeNotify.js'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
@@ -21,7 +22,12 @@ app.use(express.json({ limit: '2mb' }))
 app.use('/api', gamingRouter)
 app.use('/api', havenRouter)
 app.use('/api', a2aRouter)
+setupTeslaChargeNotifications(app)
 const DIST = path.join(__dirname, 'dist')
+const TESLA_PUBLIC_KEY_PEM = path.join(
+  DIST,
+  '.well-known/appspecific/com.tesla.3p.public-key.pem',
+)
 const SITE_NAME = 'Rafay Syed'
 const AUTHOR = 'Rafay Syed'
 const DEFAULT_IMAGE = '/hero-illustration.png'
@@ -130,6 +136,18 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
 }
+
+// Tesla Fleet partner verification: must be 200 + PEM body (not SPA HTML).
+app.get('/.well-known/appspecific/com.tesla.3p.public-key.pem', (req, res) => {
+  if (!fs.existsSync(TESLA_PUBLIC_KEY_PEM)) {
+    return res
+      .status(404)
+      .type('text/plain')
+      .send('Public key missing from build output. Run npm run build and redeploy.')
+  }
+  res.setHeader('Content-Type', 'application/x-pem-file')
+  res.sendFile(TESLA_PUBLIC_KEY_PEM)
+})
 
 // Static assets first
 app.use(express.static(DIST, { index: false }))
