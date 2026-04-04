@@ -4,6 +4,7 @@
  * Env: GOOGLE_MAPS_API_KEY (Directions API enabled), same Tesla vars as teslaChargeNotify.
  * Optional: TESLA_VIN_FILTER, TESLA_WAKE_BEFORE_NOTIFY, wake timeouts.
  * OAuth: vehicle_device_data; car GPS needs vehicle_location. vehicle_cmds if wake is used.
+ * Firmware 2023.38+: request location_data via the endpoints query param or lat/lon may be omitted.
  */
 import {
   refreshAccessToken,
@@ -12,6 +13,14 @@ import {
   extractVehicleState,
   tryWakeAndWaitOnline,
 } from './teslaChargeNotify.js'
+
+/** Fleet: include charge_state, drive_state, and location_data (required for GPS on 2023.38+). */
+function vehicleDataPath(vin) {
+  const qs = new URLSearchParams({
+    endpoints: 'charge_state;drive_state;location_data',
+  })
+  return `/api/1/vehicles/${encodeURIComponent(vin)}/vehicle_data?${qs.toString()}`
+}
 
 function extractDriveState(vdData) {
   const root = vdData?.response ?? vdData
@@ -104,10 +113,7 @@ export async function estimateTeslaTrip(opts) {
     }
   }
 
-  const { res: vdRes, data: vdData } = await fleetGet(
-    accessToken,
-    `/api/1/vehicles/${encodeURIComponent(vin)}/vehicle_data`,
-  )
+  const { res: vdRes, data: vdData } = await fleetGet(accessToken, vehicleDataPath(vin))
 
   if (vdRes.status === 408) {
     return {
