@@ -391,3 +391,13 @@ export function setupTeslaChargeNotifications(app) {
     console.log('[tesla-notify] POST /api/tesla-charge-notify enabled (x-cron-secret)')
   }
 }
+
+export {
+  refreshAccessToken,
+  fleetGet,
+  fleetPost,
+  extractChargeState,
+  extractVehicleState,
+  tryWakeAndWaitOnline,
+  sleep,
+}
