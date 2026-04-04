@@ -9,6 +9,7 @@ import Gaming from './pages/Gaming'
 import MyLife from './pages/MyLife'
 
 const RafayHaven = lazy(() => import('./pages/RafayHaven'))
+const RafayBot = lazy(() => import('./pages/RafayBot'))
 
 function App() {
   return (
@@ -27,6 +28,14 @@ function App() {
                 element={(
                   <Suspense fallback={null}>
                     <RafayHaven />
+                  </Suspense>
+                )}
+              />
+              <Route
+                path="rafay-bot"
+                element={(
+                  <Suspense fallback={null}>
+                    <RafayBot />
                   </Suspense>
                 )}
               />

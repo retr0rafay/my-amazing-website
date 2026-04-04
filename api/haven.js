@@ -1,69 +1,13 @@
 import express from 'express'
 import crypto from 'crypto'
 import { Storage } from '@google-cloud/storage'
-import { initializeApp, cert, getApps } from 'firebase-admin/app'
-import { getAuth } from 'firebase-admin/auth'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
+import { getServiceAccountFromEnv, initFirebaseAdmin, requireOwner } from './authOwner.js'
 
 const router = express.Router()
 const ALLOWED_MEDIA_TYPES = new Set(['image', 'video', 'other'])
 const MAX_CAPTION_LENGTH = 500
 const MEDIA_CACHE_CONTROL = 'public, max-age=31536000, immutable'
-
-function getServiceAccountFromEnv() {
-  const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
-  if (!raw) throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON is not set')
-  const parsed = JSON.parse(raw)
-  if (!parsed.client_email || !parsed.private_key || !parsed.project_id) {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON is missing client_email/private_key/project_id')
-  }
-  return parsed
-}
-
-function initFirebaseAdmin() {
-  if (getApps().length > 0) return
-  const serviceAccount = getServiceAccountFromEnv()
-  initializeApp({ credential: cert(serviceAccount) })
-}
-
-function parseAllowlist(value) {
-  return new Set(
-    (value || '')
-      .split(',')
-      .map((v) => v.trim().toLowerCase())
-      .filter(Boolean),
-  )
-}
-
-function requireAllowlistedOwner(decodedToken) {
-  const emails = parseAllowlist(process.env.OWNER_EMAILS)
-  const uids = parseAllowlist(process.env.OWNER_UIDS)
-  const email = (decodedToken.email || '').toLowerCase()
-  const uid = (decodedToken.uid || '').toLowerCase()
-
-  if (emails.size === 0 && uids.size === 0) {
-    throw new Error('OWNER_EMAILS or OWNER_UIDS must be configured')
-  }
-  if ((emails.size > 0 && emails.has(email)) || (uids.size > 0 && uids.has(uid))) return
-  throw new Error('Forbidden')
-}
-
-async function requireOwner(req, res, next) {
-  try {
-    initFirebaseAdmin()
-    const authHeader = req.headers.authorization || ''
-    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
-    if (!token) return res.status(401).json({ error: 'Missing auth token' })
-    const decoded = await getAuth().verifyIdToken(token)
-    requireAllowlistedOwner(decoded)
-    req.owner = decoded
-    return next()
-  } catch (err) {
-    const msg = err.message || 'Unauthorized'
-    const status = msg === 'Forbidden' ? 403 : 401
-    return res.status(status).json({ error: msg })
-  }
-}
 
 function getBucketName() {
   const bucket = process.env.GCS_BUCKET_NAME

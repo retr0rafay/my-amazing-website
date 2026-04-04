@@ -7,6 +7,7 @@ import express from 'express'
 import gamingRouter from './gaming.js'
 import havenRouter from './haven.js'
 import a2aRouter from './a2a.js'
+import ownerChatRouter from './ownerChat.js'
 import { setupTeslaChargeNotifications } from './teslaChargeNotify.js'
 
 const app = express()
@@ -14,6 +15,7 @@ app.use(express.json({ limit: '2mb' }))
 app.use('/api', gamingRouter)
 app.use('/api', havenRouter)
 app.use('/api', a2aRouter)
+app.use('/api', ownerChatRouter)
 setupTeslaChargeNotifications(app)
 
 const PORT = process.env.API_PORT || 3001

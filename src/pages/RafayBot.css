@@ -1,0 +1,130 @@
+.rafay-bot__inner {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.rafay-bot__title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.rafay-bot__subtitle {
+  margin: 0 0 1.5rem;
+  opacity: 0.85;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.rafay-bot__gate {
+  margin-top: 1rem;
+}
+
+.rafay-bot__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.rafay-bot__signed {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.rafay-bot__thread {
+  border: 1px solid var(--border-color, rgba(128, 128, 128, 0.35));
+  border-radius: 12px;
+  padding: 1rem;
+  min-height: 280px;
+  max-height: min(55vh, 420px);
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  background: var(--surface-muted, rgba(128, 128, 128, 0.06));
+}
+
+.rafay-bot__hint {
+  margin: 0;
+  opacity: 0.7;
+  font-size: 0.9rem;
+}
+
+.rafay-bot__msg {
+  margin-bottom: 1rem;
+}
+
+.rafay-bot__msg:last-child {
+  margin-bottom: 0;
+}
+
+.rafay-bot__role {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.55;
+  margin-bottom: 0.35rem;
+}
+
+.rafay-bot__bubble {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.rafay-bot__bubble--typing {
+  opacity: 0.6;
+}
+
+.rafay-bot__msg--user .rafay-bot__bubble {
+  opacity: 0.95;
+}
+
+.rafay-bot__msg--error .rafay-bot__bubble {
+  color: var(--error, #c44);
+}
+
+.rafay-bot__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rafay-bot__input {
+  width: 100%;
+  resize: vertical;
+  min-height: 4.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, rgba(128, 128, 128, 0.4));
+  background: var(--input-bg, transparent);
+  color: inherit;
+  font: inherit;
+}
+
+.rafay-bot__btn {
+  align-self: flex-start;
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  border: none;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--accent, #2563eb);
+  color: #fff;
+}
+
+.rafay-bot__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rafay-bot__btn--ghost {
+  background: transparent;
+  color: inherit;
+  border: 1px solid var(--border-color, rgba(128, 128, 128, 0.4));
+}

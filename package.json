@@ -10,6 +10,7 @@
     "start": "node server.js",
     "tesla-notify:run": "node scripts/run-tesla-notify-once.mjs",
     "tesla:exchange": "node scripts/tesla-exchange-code.mjs",
+    "tesla:oauth-url": "node scripts/tesla-oauth-url.mjs",
     "tesla:register": "node scripts/tesla-register-partner.mjs"
   },
   "dependencies": {

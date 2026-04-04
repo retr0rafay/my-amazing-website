@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url'
 import gamingRouter from './api/gaming.js'
 import havenRouter from './api/haven.js'
 import a2aRouter from './api/a2a.js'
+import ownerChatRouter from './api/ownerChat.js'
 import { setupTeslaChargeNotifications } from './api/teslaChargeNotify.js'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
@@ -22,6 +23,7 @@ app.use(express.json({ limit: '2mb' }))
 app.use('/api', gamingRouter)
 app.use('/api', havenRouter)
 app.use('/api', a2aRouter)
+app.use('/api', ownerChatRouter)
 setupTeslaChargeNotifications(app)
 const DIST = path.join(__dirname, 'dist')
 const TESLA_PUBLIC_KEY_PEM = path.join(

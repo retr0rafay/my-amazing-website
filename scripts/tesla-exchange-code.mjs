@@ -4,6 +4,14 @@
  *
  * Requires in .env: TESLA_CLIENT_ID, TESLA_CLIENT_SECRET
  * Optional: TESLA_TOKEN_AUDIENCE (default NA fleet base), TESLA_OAUTH_REDIRECT_URI
+ *
+ * When authorizing in the browser, the authorize URL MUST request every scope you need.
+ * Typical sets:
+ *   - Notifier: offline_access openid vehicle_device_data (and vehicle_cmds if wake)
+ *   - + Trip / car GPS: add vehicle_location
+ * Example scope query value (encode spaces as %20):
+ *   offline_access%20openid%20vehicle_device_data%20vehicle_location%20vehicle_cmds
+ * Re-consent after changing scopes, then exchange the new code and replace TESLA_REFRESH_TOKEN.
  */
 import 'dotenv/config'
 

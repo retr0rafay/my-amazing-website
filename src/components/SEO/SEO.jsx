@@ -24,6 +24,7 @@ export default function SEO({
   path = '',
   author,
   publishedTime,
+  noindex = false,
 }) {
   const baseUrl = getBaseUrl()
   const fullUrl = path ? `${baseUrl}${path.startsWith('/') ? path : `/${path}`}` : baseUrl
@@ -36,6 +37,7 @@ export default function SEO({
     <Helmet>
       <title>{displayTitle}</title>
       <meta name="description" content={desc} />
+      {noindex && <meta name="robots" content="noindex, nofollow" />}
 
       {/* Open Graph (Facebook, LinkedIn, etc.) */}
       <meta property="og:type" content={isArticle ? 'article' : 'website'} />
