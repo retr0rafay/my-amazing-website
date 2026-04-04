@@ -13,6 +13,9 @@
  *   TESLA_NOTIFY_CRON — default "0 7,19 * * *" (07:00 and 19:00)
  *   TESLA_NOTIFY_TZ — default America/New_York
  *   TESLA_NOTIFY_HOOK_SECRET — if set, POST /api/tesla-charge-notify with header x-cron-secret triggers a run
+ *   TESLA_WAKE_BEFORE_NOTIFY — if "true", POST /wake_up then poll until online before vehicle_data (needs vehicle_cmds OAuth scope)
+ *   TESLA_WAKE_TIMEOUT_MS — max wait for online after wake (default 120000)
+ *   TESLA_WAKE_POLL_INTERVAL_MS — poll interval ms (default 4000)
  *
  * Refresh tokens rotate: persisted to data/tesla-fleet-tokens.json (gitignored).
  * Last good charge_state per VIN: data/tesla-charge-snapshot.json (gitignored) — used when
@@ -119,6 +122,55 @@ async function fleetGet(accessToken, pathname) {
   })
   const data = await res.json().catch(() => ({}))
   return { res, data }
+}
+
+async function fleetPost(accessToken, pathname, bodyObj = {}) {
+  const url = `${fleetBase()}${pathname.startsWith('/') ? pathname : `/${pathname}`}`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(bodyObj),
+  })
+  const data = await res.json().catch(() => ({}))
+  return { res, data }
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function extractVehicleState(vehicleBody) {
+  const r = vehicleBody?.response ?? vehicleBody
+  return r?.state ?? null
+}
+
+/**
+ * POST wake_up, then poll GET /vehicles/{vin} until state === "online" or timeout.
+ * Returns true if online was seen; false if wake failed or timed out (caller still tries vehicle_data).
+ */
+async function tryWakeAndWaitOnline(accessToken, vin, timeoutMs, intervalMs) {
+  const vPath = `/api/1/vehicles/${encodeURIComponent(vin)}`
+  const { res: wRes, data: wData } = await fleetPost(accessToken, `${vPath}/wake_up`, {})
+  if (!wRes.ok) {
+    const hint = wData?.error || wData?.error_description || wRes.statusText
+    console.warn(`[tesla-notify] wake_up failed for ${vin}: ${wRes.status} ${hint}`)
+    return false
+  }
+
+  const start = Date.now()
+  while (Date.now() - start < timeoutMs) {
+    const { res, data } = await fleetGet(accessToken, vPath)
+    if (res.ok && extractVehicleState(data) === 'online') {
+      console.log(`[tesla-notify] ${vin} online after ${Date.now() - start}ms`)
+      return true
+    }
+    await sleep(intervalMs)
+  }
+  console.warn(`[tesla-notify] wake: ${vin} not online within ${timeoutMs}ms`)
+  return false
 }
 
 function extractChargeState(vehicleDataBody) {
@@ -236,11 +288,30 @@ export async function runTeslaChargeNotifyJob() {
     : null
   const notifyTz = process.env.TESLA_NOTIFY_TZ || 'America/New_York'
   const snapshot = readChargeSnapshot()
+  const wakeBefore =
+    process.env.TESLA_WAKE_BEFORE_NOTIFY === 'true' || process.env.TESLA_WAKE_BEFORE_NOTIFY === '1'
+  const wakeTimeoutMs = Math.max(
+    5000,
+    parseInt(process.env.TESLA_WAKE_TIMEOUT_MS || '120000', 10) || 120000,
+  )
+  const wakePollMs = Math.max(
+    1000,
+    parseInt(process.env.TESLA_WAKE_POLL_INTERVAL_MS || '4000', 10) || 4000,
+  )
 
   for (const v of vehicles) {
     const vin = v.vin || v.id_s
     const displayName = v.display_name || v.name
     if (vins && vin && !vins.includes(String(vin).toUpperCase())) continue
+
+    if (wakeBefore && vin) {
+      const vPath = `/api/1/vehicles/${encodeURIComponent(vin)}`
+      const { res: stRes, data: stData } = await fleetGet(accessToken, vPath)
+      const alreadyOnline = stRes.ok && extractVehicleState(stData) === 'online'
+      if (!alreadyOnline) {
+        await tryWakeAndWaitOnline(accessToken, vin, wakeTimeoutMs, wakePollMs)
+      }
+    }
 
     const { res: vdRes, data: vdData } = await fleetGet(
       accessToken,
@@ -344,6 +415,12 @@ export function setupTeslaChargeNotifications(app) {
   }
 
   startCron()
+
+  if (process.env.TESLA_WAKE_BEFORE_NOTIFY === 'true' || process.env.TESLA_WAKE_BEFORE_NOTIFY === '1') {
+    console.log(
+      '[tesla-notify] Wake-before-notify enabled (OAuth token must include vehicle_cmds scope)',
+    )
+  }
 
   const secret = process.env.TESLA_NOTIFY_HOOK_SECRET
   if (secret && app) {
