@@ -15,6 +15,8 @@
  *   TESLA_NOTIFY_HOOK_SECRET — if set, POST /api/tesla-charge-notify with header x-cron-secret triggers a run
  *
  * Refresh tokens rotate: persisted to data/tesla-fleet-tokens.json (gitignored).
+ * Last good charge_state per VIN: data/tesla-charge-snapshot.json (gitignored) — used when
+ * vehicle_data returns 408 (asleep) so Pushover still shows last known % (stale until next wake).
  */
 import fs from 'fs'
 import path from 'path'
@@ -24,6 +26,7 @@ import express from 'express'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const TOKEN_FILE = path.join(__dirname, '..', 'data', 'tesla-fleet-tokens.json')
+const CHARGE_SNAPSHOT_FILE = path.join(__dirname, '..', 'data', 'tesla-charge-snapshot.json')
 
 const DEFAULT_FLEET_BASE = 'https://fleet-api.prd.na.vn.cloud.tesla.com'
 const DEFAULT_AUTH_TOKEN_URL = 'https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token'
@@ -128,10 +131,8 @@ function extractChargeState(vehicleDataBody) {
   return cs || null
 }
 
-function formatVehicleLine(vin, displayName, chargeState, errorText) {
-  const name = displayName || vin || 'Vehicle'
-  if (errorText) return `• ${name}: ${errorText}`
-  if (!chargeState) return `• ${name}: (no charge data)`
+function formatChargeStateParts(chargeState) {
+  if (!chargeState) return null
   const pct = chargeState.battery_level
   const limit = chargeState.charge_limit_soc
   const range = chargeState.battery_range
@@ -141,7 +142,59 @@ function formatVehicleLine(vin, displayName, chargeState, errorText) {
   if (limit != null) parts.push(`limit ${limit}%`)
   if (range != null) parts.push(`~${Math.round(range)} mi`)
   if (charging && charging !== 'Disconnected' && charging !== 'Complete') parts.push(charging)
-  return `• ${name}: ${parts.join(' · ') || 'unknown'}`
+  return parts.length ? parts.join(' · ') : null
+}
+
+function formatVehicleLine(vin, displayName, chargeState, errorText) {
+  const name = displayName || vin || 'Vehicle'
+  if (errorText) return `• ${name}: ${errorText}`
+  if (!chargeState) return `• ${name}: (no charge data)`
+  const inner = formatChargeStateParts(chargeState)
+  return `• ${name}: ${inner || 'unknown'}`
+}
+
+function readChargeSnapshot() {
+  try {
+    if (!fs.existsSync(CHARGE_SNAPSHOT_FILE)) return { vehicles: {} }
+    const j = JSON.parse(fs.readFileSync(CHARGE_SNAPSHOT_FILE, 'utf8'))
+    if (j && typeof j.vehicles === 'object' && j.vehicles) return j
+  } catch (e) {
+    console.warn('[tesla-notify] Could not read charge snapshot:', e.message)
+  }
+  return { vehicles: {} }
+}
+
+function persistChargeSnapshot(vin, displayName, chargeState) {
+  if (!vin || !chargeState) return
+  try {
+    const dir = path.dirname(CHARGE_SNAPSHOT_FILE)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    const snap = readChargeSnapshot()
+    const key = String(vin).toUpperCase()
+    snap.vehicles[key] = {
+      display_name: displayName || null,
+      updated_at: new Date().toISOString(),
+      charge_state: chargeState,
+    }
+    fs.writeFileSync(CHARGE_SNAPSHOT_FILE, JSON.stringify(snap, null, 2), 'utf8')
+  } catch (e) {
+    console.warn('[tesla-notify] Could not persist charge snapshot:', e.message)
+  }
+}
+
+function formatAsleepWithLastKnown(vin, displayName, cached, tz) {
+  const name = displayName || vin || 'Vehicle'
+  const parts = formatChargeStateParts(cached.charge_state)
+  const when = new Date(cached.updated_at).toLocaleString('en-US', {
+    timeZone: tz || 'America/New_York',
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+  const core = parts || 'unknown'
+  return `• ${name}: asleep — last known: ${core} (${when})`
 }
 
 export async function runTeslaChargeNotifyJob() {
@@ -181,6 +234,8 @@ export async function runTeslaChargeNotifyJob() {
   const vins = process.env.TESLA_VIN_FILTER
     ? process.env.TESLA_VIN_FILTER.split(',').map((v) => v.trim().toUpperCase())
     : null
+  const notifyTz = process.env.TESLA_NOTIFY_TZ || 'America/New_York'
+  const snapshot = readChargeSnapshot()
 
   for (const v of vehicles) {
     const vin = v.vin || v.id_s
@@ -193,7 +248,12 @@ export async function runTeslaChargeNotifyJob() {
     )
 
     if (vdRes.status === 408) {
-      lines.push(formatVehicleLine(vin, displayName, null, 'asleep / unavailable (408)'))
+      const cached = snapshot.vehicles[String(vin).toUpperCase()]
+      if (cached?.charge_state) {
+        lines.push(formatAsleepWithLastKnown(vin, displayName, cached, notifyTz))
+      } else {
+        lines.push(formatVehicleLine(vin, displayName, null, 'asleep / unavailable (408)'))
+      }
       continue
     }
     if (!vdRes.ok) {
@@ -203,6 +263,7 @@ export async function runTeslaChargeNotifyJob() {
     }
 
     const cs = extractChargeState(vdData)
+    if (cs) persistChargeSnapshot(vin, displayName, cs)
     lines.push(formatVehicleLine(vin, displayName, cs, null))
   }
 
