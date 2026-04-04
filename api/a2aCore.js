@@ -2,7 +2,11 @@
  * Shared Claude + optional Tesla tool loop for public /a2a and authenticated /owner-chat.
  */
 import Anthropic from '@anthropic-ai/sdk'
-import { estimateTeslaTrip } from './teslaTripEstimate.js'
+import {
+  estimateTeslaTrip,
+  getTeslaChargeState,
+  listTeslaVehicles,
+} from './teslaTripEstimate.js'
 
 const SYSTEM_PROMPT = `You are Rafay Syed's personal AI agent for rafaysyed.dev. You respond on his behalf to other AI agents and humans.
 
@@ -23,7 +27,7 @@ You are helpful, concise, and friendly. Answer questions about Rafay based on th
 
 const TESLA_TOOLS_SYSTEM = `
 
-You can call the tool estimate_tesla_trip when the user asks whether they have enough battery / range to drive somewhere, or how much range they might have left after a trip. Use destination as a place name or full address (e.g. "Boston MA"). If the car has no GPS, ask for a starting address and call the tool again with origin_address set. Summarize the JSON result in plain language and always mention that figures are rough estimates, not guarantees.`
+Tesla account may have multiple vehicles. Use list_tesla_vehicles when the user asks about "the other car" or which vehicle is used, or when you need display names to pick the right car. For current battery % and rated miles without a destination, use get_tesla_charge_state with vehicle_query (e.g. "Model Y", a nickname, or last 6 of VIN). For trip feasibility, use estimate_tesla_trip with destination and optional vehicle_query so the right car is selected (defaults to first vehicle or TESLA_VIN_FILTER if set). Use destination as a place name or full address (e.g. "Boston MA"). If the car has no GPS, ask for a starting address and call again with origin_address set. Summarize JSON in plain language and note that figures are rough estimates, not guarantees.`
 
 const UNAUTH_TRIP_HINT = `
 
@@ -34,6 +38,30 @@ const OWNER_CONTEXT = `
 [Request authentication: The caller presented a site owner credential. Assume you are speaking directly with Rafay Syed (the site owner), not a random third party. You may address him as "you" when helpful; keep the same factual boundaries about public bio info.]`
 
 const TESLA_TOOLS = [
+  {
+    name: 'list_tesla_vehicles',
+    description:
+      'List vehicles on the linked Tesla account (display name, model if known, last 6 of VIN). Use when the user has multiple cars or asks which vehicle data applies.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'get_tesla_charge_state',
+    description:
+      'Current battery percent and rated miles remaining for one vehicle via Tesla Fleet. Use when the user asks how much battery/range they have without naming a destination.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        vehicle_query: {
+          type: 'string',
+          description:
+            'Optional: which car — nickname, "Model Y", model name, full or partial VIN. Omit to use default (first vehicle or TESLA_VIN_FILTER).',
+        },
+      },
+    },
+  },
   {
     name: 'estimate_tesla_trip',
     description:
@@ -49,6 +77,11 @@ const TESLA_TOOLS = [
           type: 'string',
           description:
             'Optional starting address if car GPS is unavailable or user wants a fixed start (e.g. home).',
+        },
+        vehicle_query: {
+          type: 'string',
+          description:
+            'Optional: which car — nickname, "Model Y", model name, full or partial VIN. Omit to use default (first vehicle or TESLA_VIN_FILTER).',
         },
       },
       required: ['destination'],
@@ -113,11 +146,19 @@ export async function runA2aAgent(userText, opts) {
       if (block.type !== 'tool_use') continue
       let payload
       try {
-        if (block.name === 'estimate_tesla_trip') {
+        if (block.name === 'list_tesla_vehicles') {
+          payload = await listTeslaVehicles()
+        } else if (block.name === 'get_tesla_charge_state') {
+          const input = block.input || {}
+          payload = await getTeslaChargeState({
+            vehicle_query: input.vehicle_query,
+          })
+        } else if (block.name === 'estimate_tesla_trip') {
           const input = block.input || {}
           payload = await estimateTeslaTrip({
             destination: input.destination,
             origin_address: input.origin_address,
+            vehicle_query: input.vehicle_query,
           })
         } else {
           payload = { error: `Unknown tool: ${block.name}` }
