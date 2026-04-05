@@ -265,7 +265,7 @@ export default function RafayBot() {
                 <span className="rafay-bot__signed">{user.email || user.uid}</span>
                 <div className="rafay-bot__toolbar-right">
                   <label
-                    className={`rafay-bot__voice${!voiceStatusLoaded ? ' rafay-bot__voice--pending' : ''}`}
+                    className={`rafay-bot__voice-toggle${!voiceStatusLoaded ? ' rafay-bot__voice-toggle--pending' : ''}${!voiceStatusLoaded || !voiceAvailable ? ' rafay-bot__voice-toggle--disabled' : ''}`}
                     title={
                       !voiceStatusLoaded
                         ? 'Checking voice…'
@@ -274,23 +274,28 @@ export default function RafayBot() {
                           : 'Play assistant replies with Eleven Labs text-to-speech.'
                     }
                   >
-                    <input
-                      type="checkbox"
-                      role="switch"
-                      checked={voiceOn}
-                      disabled={!voiceStatusLoaded || !voiceAvailable}
-                      onChange={(e) => {
-                        const on = e.target.checked
-                        setVoiceOn(on)
-                        try {
-                          localStorage.setItem(VOICE_LS_KEY, on ? '1' : '0')
-                        } catch {
-                          /* ignore */
-                        }
-                        if (!on) stopVoice()
-                      }}
-                    />
-                    <span className="rafay-bot__voice-label">Voice</span>
+                    <span className="rafay-bot__voice-toggle-text">Speak replies</span>
+                    <span className="rafay-bot__voice-toggle-slot">
+                      <input
+                        type="checkbox"
+                        role="switch"
+                        className="rafay-bot__voice-toggle-input"
+                        checked={voiceOn}
+                        disabled={!voiceStatusLoaded || !voiceAvailable}
+                        onChange={(e) => {
+                          const on = e.target.checked
+                          setVoiceOn(on)
+                          try {
+                            localStorage.setItem(VOICE_LS_KEY, on ? '1' : '0')
+                          } catch {
+                            /* ignore */
+                          }
+                          if (!on) stopVoice()
+                        }}
+                      />
+                      <span className="rafay-bot__voice-toggle-track" aria-hidden />
+                      <span className="rafay-bot__voice-toggle-thumb" aria-hidden />
+                    </span>
                   </label>
                   <button className="rafay-bot__btn rafay-bot__btn--ghost" type="button" onClick={() => signOut(auth)}>
                     Sign out
@@ -304,29 +309,54 @@ export default function RafayBot() {
               )}
               <div className="rafay-bot__thread" role="log" aria-live="polite">
                 {messages.length === 0 && (
-                  <p className="rafay-bot__hint">
-                    Ask about your bio, the site, gaming, or (with voice) a Tesla trip — this agent is scoped to Rafay
-                    and rafaysyed.dev, not general chat.
-                  </p>
+                  <div className="rafay-bot__empty">
+                    <p className="rafay-bot__empty-title">Start a conversation</p>
+                    <p className="rafay-bot__empty-lead">
+                      Scoped to you and this site — not a general web chatbot. Try one of these:
+                    </p>
+                    <ul className="rafay-bot__empty-chips">
+                      <li>Your background &amp; career</li>
+                      <li>This site &amp; the public A2A agent</li>
+                      <li>Gaming &amp; PlayStation</li>
+                      <li>Tesla range / trips (with voice if enabled)</li>
+                    </ul>
+                  </div>
                 )}
                 {messages.map((msg, i) => (
                   <div
                     key={`${i}-${msg.role}`}
                     className={`rafay-bot__msg rafay-bot__msg--${msg.role}${msg.isError ? ' rafay-bot__msg--error' : ''}`}
                   >
-                    <span className="rafay-bot__role">{msg.role === 'user' ? 'You' : 'Rafay Bot'}</span>
-                    <MessageBubble text={msg.text} role={msg.role} isError={msg.isError} />
+                    <div className="rafay-bot__msg-inner">
+                      <span
+                        className={`rafay-bot__msg-avatar rafay-bot__msg-avatar--${msg.role}`}
+                        aria-hidden
+                      >
+                        {msg.role === 'user' ? 'Y' : 'R'}
+                      </span>
+                      <div className="rafay-bot__msg-body">
+                        <span className="rafay-bot__role">{msg.role === 'user' ? 'You' : 'Rafay Bot'}</span>
+                        <MessageBubble text={msg.text} role={msg.role} isError={msg.isError} />
+                      </div>
+                    </div>
                   </div>
                 ))}
                 {loading && (
                   <div className="rafay-bot__msg rafay-bot__msg--assistant">
-                    <span className="rafay-bot__role">Rafay Bot</span>
-                    <div className="rafay-bot__bubble rafay-bot__bubble--typing">
-                      <span className="rafay-bot__typing-dots" aria-hidden>
-                        <span />
-                        <span />
-                        <span />
+                    <div className="rafay-bot__msg-inner">
+                      <span className="rafay-bot__msg-avatar rafay-bot__msg-avatar--assistant" aria-hidden>
+                        R
                       </span>
+                      <div className="rafay-bot__msg-body">
+                        <span className="rafay-bot__role">Rafay Bot</span>
+                        <div className="rafay-bot__bubble rafay-bot__bubble--typing">
+                          <span className="rafay-bot__typing-dots" aria-hidden>
+                            <span />
+                            <span />
+                            <span />
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -345,17 +375,35 @@ export default function RafayBot() {
                     rows={3}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault()
+                        if (!loading && input.trim()) send()
+                      }
+                    }}
                     placeholder="Message your assistant…"
                     disabled={loading}
                     aria-label="Message"
                   />
-                  <button
-                    className="rafay-bot__btn rafay-bot__btn--primary rafay-bot__send"
-                    type="submit"
-                    disabled={loading || !input.trim()}
-                  >
-                    Send
-                  </button>
+                  <div className="rafay-bot__composer-actions">
+                    <span className="rafay-bot__composer-hint" title="Send without clicking the button">
+                      <kbd className="rafay-bot__kbd">⌘</kbd>
+                      <span className="rafay-bot__kbd-plus">+</span>
+                      <kbd className="rafay-bot__kbd">Enter</kbd>
+                      <span className="rafay-bot__composer-hint-sep">·</span>
+                      <kbd className="rafay-bot__kbd">Ctrl</kbd>
+                      <span className="rafay-bot__kbd-plus">+</span>
+                      <kbd className="rafay-bot__kbd">Enter</kbd>
+                      <span className="rafay-bot__composer-hint-label">to send</span>
+                    </span>
+                    <button
+                      className="rafay-bot__btn rafay-bot__btn--primary rafay-bot__send"
+                      type="submit"
+                      disabled={loading || !input.trim()}
+                    >
+                      Send
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
