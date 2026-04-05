@@ -8,6 +8,7 @@ import express from 'express'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
+import googleHomeBridgeRouter from './api/googleHomeBridge.js'
 import havenRouter from './api/haven.js'
 import a2aRouter from './api/a2a.js'
 import ownerChatRouter from './api/ownerChat.js'
@@ -19,6 +20,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const app = express()
 app.use(express.json({ limit: '2mb' }))
 
+app.use('/api', googleHomeBridgeRouter)
 app.use('/api', havenRouter)
 app.use('/api', a2aRouter)
 app.use('/api', ownerChatRouter)

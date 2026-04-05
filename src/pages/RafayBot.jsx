@@ -3,6 +3,7 @@ import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
 import ReactMarkdown from 'react-markdown'
 import remarkBreaks from 'remark-breaks'
 import SEO from '../components/SEO/SEO'
+import AgentIntegrations from '../components/AgentIntegrations/AgentIntegrations'
 import RafayBotAvatar from '../components/RafayBotAvatar/RafayBotAvatar'
 import { auth, provider } from '../lib/firebase'
 import './RafayBot.css'
@@ -222,7 +223,7 @@ export default function RafayBot() {
       ? 'Preparing voice…'
       : isSpeaking
         ? voiceCaption || 'Speaking…'
-        : 'Your private assistant on rafaysyed.dev'
+        : 'Standing by.'
 
   return (
     <main className="rafay-bot page">
@@ -232,9 +233,14 @@ export default function RafayBot() {
           <span className="rafay-bot__hero-badge">Assistant</span>
           <h1 className="rafay-bot__title">Rafay Bot</h1>
           <p className="rafay-bot__subtitle">
-            Claude + your site context — same agent as <code className="rafay-bot__inline-code">/api/a2a</code>, with
-            optional ElevenLabs voice for owners.
+            Hey Rafay! It&apos;s me, your assistant. Please let me know how I can be of help.
           </p>
+          <p className="rafay-bot__hero-meta">
+            <span className="rafay-bot__hero-meta-bit">Personal suite</span>
+            <span className="rafay-bot__hero-meta-sep">·</span>
+            <span className="rafay-bot__hero-meta-bit">Secure session</span>
+          </p>
+          <AgentIntegrations />
         </header>
 
         {!user && (
@@ -260,9 +266,33 @@ export default function RafayBot() {
             <aside className="rafay-bot__aside" aria-label="Assistant avatar">
               <RafayBotAvatar mood={avatarMood} subtitle={avatarSubtitle} />
             </aside>
-            <div className="rafay-bot__main">
+            <div
+              className={`rafay-bot__main${loading ? ' rafay-bot__main--thinking' : ''}${ttsLoading ? ' rafay-bot__main--preparing' : ''}${isSpeaking ? ' rafay-bot__main--speaking' : ''}`}
+            >
+              <div className="rafay-bot__hud-frame" aria-hidden>
+                <span className="rafay-bot__hud-corner rafay-bot__hud-corner--tl" />
+                <span className="rafay-bot__hud-corner rafay-bot__hud-corner--tr" />
+                <span className="rafay-bot__hud-corner rafay-bot__hud-corner--bl" />
+                <span className="rafay-bot__hud-corner rafay-bot__hud-corner--br" />
+              </div>
               <div className="rafay-bot__toolbar">
-                <span className="rafay-bot__signed">{user.email || user.uid}</span>
+                <div className="rafay-bot__toolbar-left">
+                  <span className="rafay-bot__status" title="Session active">
+                    <span className="rafay-bot__status-dot" />
+                    <span className="rafay-bot__status-label">Link active</span>
+                  </span>
+                  <span className="rafay-bot__toolbar-sep" aria-hidden />
+                  <span className="rafay-bot__signed">{user.email || user.uid}</span>
+                  {isSpeaking && (
+                    <div className="rafay-bot__voice-meter" aria-hidden>
+                      <span className="rafay-bot__voice-meter-bar" />
+                      <span className="rafay-bot__voice-meter-bar" />
+                      <span className="rafay-bot__voice-meter-bar" />
+                      <span className="rafay-bot__voice-meter-bar" />
+                      <span className="rafay-bot__voice-meter-bar" />
+                    </div>
+                  )}
+                </div>
                 <div className="rafay-bot__toolbar-right">
                   <label
                     className={`rafay-bot__voice-toggle${!voiceStatusLoaded ? ' rafay-bot__voice-toggle--pending' : ''}${!voiceStatusLoaded || !voiceAvailable ? ' rafay-bot__voice-toggle--disabled' : ''}`}
