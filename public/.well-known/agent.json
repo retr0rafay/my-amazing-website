@@ -1,6 +1,6 @@
 {
   "name": "Rafay's Agent",
-  "description": "Personal AI agent for Rafay Syed — software engineer (GreenSpark Software), previously co-founder/CTO at Rounds.so and engineer at Flexbone; PlayStation gamer (handle retr0rafay); portfolio at rafaysyed.dev. Answers questions about Rafay and can be reached by other agents via JSON-RPC.",
+  "description": "Scoped personal site agent for Rafay Syed — answers questions about Rafay, his portfolio (rafaysyed.dev), and related topics; optional Tesla trip tools when authenticated. Not a general-purpose assistant. Reachable by other agents via JSON-RPC.",
   "url": "https://rafaysyed.dev/api/a2a",
   "supportedInterfaces": [
     {

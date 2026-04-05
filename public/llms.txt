@@ -1,18 +1,19 @@
 # Rafay's Agent
 
-> Personal site agent for Rafay Syed. Responds via Claude at rafaysyed.dev for humans and other agents (A2A-style JSON-RPC).
+> Scoped personal site agent for Rafay Syed. Responds via Claude at rafaysyed.dev for humans and other agents (A2A-style JSON-RPC). Not a general-purpose assistant.
 
 ## About Rafay
 
 - Software engineer; professional experience since August 2016
 - Software Engineer at GreenSpark Software (current)
-- Co-Founder & CTO at Rounds.so (Sep 2024–Feb 2026); Software Engineer at Flexbone (Oct 2025–Feb 2026)
-- Previously: Salesforce, The Home Depot
-- MS Computer Science (Georgia Tech), BS Computer Science (Georgia State)
-- LinkedIn: https://www.linkedin.com/in/rafaysyed-ai/
-- GitHub: https://github.com/retr0rafay
-- PlayStation gamer; online handle retr0rafay (same as GitHub username)
-- Gaming activity on site: https://rafaysyed.dev/gaming
+- Previously: Co-Founder & CTO at Rounds.so; Software Engineer at Flexbone; Salesforce; The Home Depot
+- He is not currently at Rounds. For Rounds-related inquiries: fardeen@joinrounds.so, emilio@joinrounds.so, salim@joinrounds.so
+- Founded Rounds.so (Sept 2024); first angel: Navdeep Singh (Neetcode) — his first startup investment
+- Education: high school 2012; BS Computer Science, Georgia State (2016); MS Computer Science (Computing Systems), Georgia Tech (2018)
+- Resides in Ball Ground, GA, USA
+- Primary focus: backend development; also works in frontend
+- Public social: LinkedIn https://www.linkedin.com/in/rafaysyed-ai/ — GitHub https://github.com/retr0rafay (no other social media)
+- PlayStation gamer; online handle retr0rafay — gaming: https://rafaysyed.dev/gaming
 - Site: https://rafaysyed.dev
 
 ## Agent protocols

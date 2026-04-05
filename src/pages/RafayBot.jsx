@@ -305,8 +305,8 @@ export default function RafayBot() {
               <div className="rafay-bot__thread" role="log" aria-live="polite">
                 {messages.length === 0 && (
                   <p className="rafay-bot__hint">
-                    Try a question about your bio, a Tesla trip, or anything you’d ask the public A2A agent — with your
-                    owner tools enabled here.
+                    Ask about your bio, the site, gaming, or (with voice) a Tesla trip — this agent is scoped to Rafay
+                    and rafaysyed.dev, not general chat.
                   </p>
                 )}
                 {messages.map((msg, i) => (
