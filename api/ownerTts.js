@@ -4,7 +4,10 @@
  * Env:
  *   ELEVENLABS_API_KEY   — required
  *   ELEVENLABS_VOICE_ID  — required (voice ID from Eleven Labs dashboard)
- *   ELEVENLABS_MODEL_ID  — optional, default eleven_turbo_v2_5
+ *   ELEVENLABS_MODEL_ID  — optional, default eleven_multilingual_v2
+ *   ELEVENLABS_API_BASE  — optional API origin (default https://api.elevenlabs.io).
+ *     EU data residency / isolated orgs may need https://api.eu.residency.elevenlabs.io
+ *     with a key created for that environment (see ElevenLabs data residency docs).
  */
 import express from 'express'
 import { requireOwner } from './authOwner.js'
@@ -34,10 +37,59 @@ function getElevenLabsEnv() {
   }
 }
 
+function getApiBase() {
+  const raw = sanitizeEnvString(process.env.ELEVENLABS_API_BASE) || 'https://api.elevenlabs.io'
+  return raw.replace(/\/$/, '')
+}
+
+function parseElevenLabsErrorBody(errBody) {
+  try {
+    const j = JSON.parse(errBody)
+    const d = j.detail
+    if (typeof d === 'string') return d
+    if (d && typeof d === 'object') {
+      if (d.message) return String(d.message)
+      if (d.status) return String(d.status)
+    }
+    if (j.message) return String(j.message)
+  } catch {
+    /* ignore */
+  }
+  return errBody ? errBody.slice(0, 200) : ''
+}
+
 router.get('/owner-tts/status', requireOwner, (req, res) => {
   const { key, voiceId } = getElevenLabsEnv()
   res.json({
     enabled: !!(key && voiceId),
+  })
+})
+
+/** Owner-only: lengths + GET /v1/user probe (no secrets). Helps debug 401 / wrong API host. */
+router.get('/owner-tts/diag', requireOwner, async (req, res) => {
+  const { key, voiceId } = getElevenLabsEnv()
+  const base = getApiBase()
+  let userProbe = null
+  if (key) {
+    try {
+      const r = await fetch(`${base}/v1/user`, {
+        headers: { 'xi-api-key': key },
+      })
+      const txt = await r.text()
+      userProbe = {
+        status: r.status,
+        ok: r.ok,
+        detail: r.ok ? 'key accepted for this API base' : parseElevenLabsErrorBody(txt),
+      }
+    } catch (e) {
+      userProbe = { error: String(e.message || e) }
+    }
+  }
+  res.json({
+    apiBase: base,
+    keyLength: key.length,
+    voiceIdLength: voiceId.length,
+    userProbe,
   })
 })
 
@@ -62,8 +114,9 @@ router.post('/owner-tts', requireOwner, async (req, res) => {
     text = `${text.slice(0, MAX_CHARS)}…`
   }
 
-  const modelId = process.env.ELEVENLABS_MODEL_ID || 'eleven_turbo_v2_5'
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`
+  const modelId = process.env.ELEVENLABS_MODEL_ID || 'eleven_multilingual_v2'
+  const base = getApiBase()
+  const url = `${base}/v1/text-to-speech/${encodeURIComponent(voiceId)}`
 
   try {
     const elRes = await fetch(url, {
@@ -81,17 +134,20 @@ router.post('/owner-tts', requireOwner, async (req, res) => {
 
     if (!elRes.ok) {
       const errBody = await elRes.text().catch(() => '')
+      const parsed = parseElevenLabsErrorBody(errBody)
       console.error('[owner-tts] ElevenLabs error', elRes.status, errBody.slice(0, 500))
       let hint = 'Check voice ID and API key.'
       if (elRes.status === 401) {
         hint =
-          'API key was rejected (401). In Railway: re-paste the key with no quotes/spaces, confirm variable name is ELEVENLABS_API_KEY, redeploy, and create a new key in Eleven Labs if needed.'
+          '401 = API key not accepted on this API host. Fix: (1) Create a new key in ElevenLabs → Profile → API keys and paste again in Railway (no quotes). (2) If your org uses EU data residency, set ELEVENLABS_API_BASE=https://api.eu.residency.elevenlabs.io and use a key from that environment. (3) Redeploy after saving env. GET /api/owner-tts/diag (signed in) shows whether /v1/user accepts your key.'
       } else if (elRes.status === 400) {
         hint =
-          'Bad request — often wrong model_id (try ELEVENLABS_MODEL_ID) or invalid voice ID.'
+          'Bad request — often wrong model_id (set ELEVENLABS_MODEL_ID) or invalid voice ID.'
       }
       return res.status(502).json({
         error: `Eleven Labs error (${elRes.status}). ${hint}`,
+        elevenLabsDetail: parsed || undefined,
+        apiBase: base,
       })
     }
 

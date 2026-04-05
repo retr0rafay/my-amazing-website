@@ -138,7 +138,8 @@ export default function RafayBot() {
       const ct = res.headers.get('content-type') || ''
       if (!res.ok || !ct.includes('audio')) {
         const err = ct.includes('json') ? await res.json().catch(() => ({})) : {}
-        throw new Error(err.error || res.statusText || 'Voice request failed')
+        const parts = [err.error, err.elevenLabsDetail].filter(Boolean)
+        throw new Error(parts.join(' — ') || res.statusText || 'Voice request failed')
       }
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
