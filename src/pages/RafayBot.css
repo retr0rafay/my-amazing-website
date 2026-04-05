@@ -37,6 +37,12 @@
   flex-wrap: wrap;
 }
 
+.rafay-bot__tts-loading {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
 .rafay-bot__voice {
   display: inline-flex;
   align-items: center;

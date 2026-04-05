@@ -8,8 +8,12 @@
  *   ELEVENLABS_API_BASE  — optional API origin (default https://api.elevenlabs.io).
  *     EU data residency / isolated orgs may need https://api.eu.residency.elevenlabs.io
  *     with a key created for that environment (see ElevenLabs data residency docs).
+ *   ELEVENLABS_STREAMING_LATENCY — 0–4, default 4 (fastest TTFB; may affect number pronunciation).
+ *   ELEVENLABS_OUTPUT_FORMAT — e.g. mp3_44100_128 (default), mp3_22050_32 for slightly smaller/faster files.
  */
 import express from 'express'
+import { Readable } from 'node:stream'
+import { pipeline } from 'node:stream/promises'
 import { requireOwner } from './authOwner.js'
 import { stripMarkdownForSpeech } from './ttsStrip.js'
 
@@ -40,6 +44,16 @@ function getElevenLabsEnv() {
 function getApiBase() {
   const raw = sanitizeEnvString(process.env.ELEVENLABS_API_BASE) || 'https://api.elevenlabs.io'
   return raw.replace(/\/$/, '')
+}
+
+function getStreamingLatency() {
+  const n = parseInt(process.env.ELEVENLABS_STREAMING_LATENCY ?? '4', 10)
+  if (Number.isNaN(n)) return 4
+  return Math.min(4, Math.max(0, n))
+}
+
+function getOutputFormat() {
+  return sanitizeEnvString(process.env.ELEVENLABS_OUTPUT_FORMAT) || 'mp3_44100_128'
 }
 
 function parseElevenLabsErrorBody(errBody) {
@@ -116,7 +130,11 @@ router.post('/owner-tts', requireOwner, async (req, res) => {
 
   const modelId = process.env.ELEVENLABS_MODEL_ID || 'eleven_multilingual_v2'
   const base = getApiBase()
-  const url = `${base}/v1/text-to-speech/${encodeURIComponent(voiceId)}`
+  const qs = new URLSearchParams({
+    optimize_streaming_latency: String(getStreamingLatency()),
+    output_format: getOutputFormat(),
+  })
+  const url = `${base}/v1/text-to-speech/${encodeURIComponent(voiceId)}/stream?${qs.toString()}`
 
   try {
     const elRes = await fetch(url, {
@@ -140,6 +158,9 @@ router.post('/owner-tts', requireOwner, async (req, res) => {
       if (elRes.status === 401) {
         hint =
           '401 = API key not accepted on this API host. Fix: (1) Create a new key in ElevenLabs → Profile → API keys and paste again in Railway (no quotes). (2) If your org uses EU data residency, set ELEVENLABS_API_BASE=https://api.eu.residency.elevenlabs.io and use a key from that environment. (3) Redeploy after saving env. GET /api/owner-tts/diag (signed in) shows whether /v1/user accepts your key.'
+      } else if (elRes.status === 402) {
+        hint =
+          '402 = subscription: many “library” voices require a paid plan for API use on ElevenLabs. Options: upgrade your plan, or change ELEVENLABS_VOICE_ID to a voice allowed on your tier (e.g. a premade voice ID from their docs, or a custom voice you created in the dashboard). The detail below is from ElevenLabs.'
       } else if (elRes.status === 400) {
         hint =
           'Bad request — often wrong model_id (set ELEVENLABS_MODEL_ID) or invalid voice ID.'
@@ -151,13 +172,27 @@ router.post('/owner-tts', requireOwner, async (req, res) => {
       })
     }
 
-    const buf = Buffer.from(await elRes.arrayBuffer())
-    res.setHeader('Content-Type', 'audio/mpeg')
+    if (!elRes.body) {
+      return res.status(502).json({ error: 'Eleven Labs returned an empty body stream.' })
+    }
+
+    const upstreamType = elRes.headers.get('content-type') || 'audio/mpeg'
+    res.setHeader('Content-Type', upstreamType.startsWith('audio/') ? upstreamType : 'audio/mpeg')
     res.setHeader('Cache-Control', 'private, no-store')
-    return res.send(buf)
+
+    try {
+      await pipeline(Readable.fromWeb(elRes.body), res)
+    } catch (pipeErr) {
+      console.error('[owner-tts] stream pipe', pipeErr)
+      if (!res.headersSent) {
+        return res.status(502).json({ error: 'Failed to stream audio from Eleven Labs.' })
+      }
+    }
   } catch (e) {
     console.error('[owner-tts]', e)
-    return res.status(500).json({ error: String(e.message || e) })
+    if (!res.headersSent) {
+      return res.status(500).json({ error: String(e.message || e) })
+    }
   }
 })
 
