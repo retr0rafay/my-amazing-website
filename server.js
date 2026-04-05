@@ -12,6 +12,7 @@ import gamingRouter from './api/gaming.js'
 import havenRouter from './api/haven.js'
 import a2aRouter from './api/a2a.js'
 import ownerChatRouter from './api/ownerChat.js'
+import ownerTtsRouter from './api/ownerTts.js'
 import { setupTeslaChargeNotifications } from './api/teslaChargeNotify.js'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
@@ -24,6 +25,7 @@ app.use('/api', gamingRouter)
 app.use('/api', havenRouter)
 app.use('/api', a2aRouter)
 app.use('/api', ownerChatRouter)
+app.use('/api', ownerTtsRouter)
 setupTeslaChargeNotifications(app)
 const DIST = path.join(__dirname, 'dist')
 const TESLA_PUBLIC_KEY_PEM = path.join(

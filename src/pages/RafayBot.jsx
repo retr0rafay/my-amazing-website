@@ -38,12 +38,25 @@ function parseAllowlist(value) {
     .filter(Boolean)
 }
 
+const VOICE_LS_KEY = 'rafay-bot-voice'
+
 export default function RafayBot() {
   const [user, setUser] = useState(null)
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [voiceOn, setVoiceOn] = useState(() => {
+    try {
+      return typeof localStorage !== 'undefined' && localStorage.getItem(VOICE_LS_KEY) === '1'
+    } catch {
+      return false
+    }
+  })
+  const [voiceAvailable, setVoiceAvailable] = useState(false)
+  const [voiceStatusLoaded, setVoiceStatusLoaded] = useState(false)
   const bottomRef = useRef(null)
+  const audioRef = useRef(null)
+  const objectUrlRef = useRef(null)
 
   const ownerEmails = useMemo(() => parseAllowlist(import.meta.env.VITE_OWNER_EMAILS), [])
   const ownerUids = useMemo(() => parseAllowlist(import.meta.env.VITE_OWNER_UIDS), [])
@@ -61,6 +74,88 @@ export default function RafayBot() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
+
+  const stopVoice = useCallback(() => {
+    if (audioRef.current) {
+      try {
+        audioRef.current.pause()
+        audioRef.current.src = ''
+      } catch {
+        /* ignore */
+      }
+      audioRef.current = null
+    }
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current)
+      objectUrlRef.current = null
+    }
+  }, [])
+
+  useEffect(() => () => stopVoice(), [stopVoice])
+
+  useEffect(() => {
+    if (!isOwner || !user) return undefined
+    let cancelled = false
+    ;(async () => {
+      try {
+        const token = await auth.currentUser.getIdToken()
+        const r = await fetch('/api/owner-tts/status', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (cancelled) return
+        if (!r.ok) {
+          setVoiceAvailable(false)
+          setVoiceStatusLoaded(true)
+          return
+        }
+        const d = await r.json().catch(() => ({}))
+        if (!cancelled) {
+          setVoiceAvailable(!!d.enabled)
+          setVoiceStatusLoaded(true)
+        }
+      } catch {
+        if (!cancelled) setVoiceStatusLoaded(true)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [isOwner, user])
+
+  const playTts = useCallback(
+    async (text) => {
+      if (!text?.trim() || !voiceOn || !voiceAvailable) return
+      stopVoice()
+      const token = await auth.currentUser.getIdToken()
+      const res = await fetch('/api/owner-tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text }),
+      })
+      const ct = res.headers.get('content-type') || ''
+      if (!res.ok || !ct.includes('audio')) {
+        const err = ct.includes('json') ? await res.json().catch(() => ({})) : {}
+        throw new Error(err.error || res.statusText || 'Voice request failed')
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      objectUrlRef.current = url
+      const audio = new Audio(url)
+      audioRef.current = audio
+      audio.onended = () => {
+        if (objectUrlRef.current === url) {
+          URL.revokeObjectURL(url)
+          objectUrlRef.current = null
+        }
+        audioRef.current = null
+      }
+      await audio.play()
+    },
+    [voiceOn, voiceAvailable, stopVoice],
+  )
 
   const send = useCallback(async () => {
     const text = input.trim()
@@ -82,7 +177,15 @@ export default function RafayBot() {
       if (!res.ok) {
         throw new Error(data.error || res.statusText || 'Request failed')
       }
-      setMessages((m) => [...m, { role: 'assistant', text: data.text || '(empty response)' }])
+      const reply = data.text || '(empty response)'
+      setMessages((m) => [...m, { role: 'assistant', text: reply }])
+      if (voiceOn && voiceAvailable) {
+        try {
+          await playTts(reply)
+        } catch (ve) {
+          console.warn('[voice]', ve)
+        }
+      }
     } catch (e) {
       setMessages((m) => [
         ...m,
@@ -91,7 +194,7 @@ export default function RafayBot() {
     } finally {
       setLoading(false)
     }
-  }, [input, isOwner, loading])
+  }, [input, isOwner, loading, voiceOn, voiceAvailable, playTts])
 
   return (
     <main className="rafay-bot page">
@@ -119,10 +222,45 @@ export default function RafayBot() {
           <>
             <div className="rafay-bot__toolbar">
               <span className="rafay-bot__signed">Signed in as {user.email || user.uid}</span>
-              <button className="rafay-bot__btn rafay-bot__btn--ghost" type="button" onClick={() => signOut(auth)}>
-                Sign out
-              </button>
+              <div className="rafay-bot__toolbar-right">
+                <label
+                  className={`rafay-bot__voice${!voiceStatusLoaded ? ' rafay-bot__voice--pending' : ''}`}
+                  title={
+                    !voiceStatusLoaded
+                      ? 'Checking voice…'
+                      : !voiceAvailable
+                        ? 'Set ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID on the server.'
+                        : 'Play assistant replies with Eleven Labs text-to-speech.'
+                  }
+                >
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    checked={voiceOn}
+                    disabled={!voiceStatusLoaded || !voiceAvailable}
+                    onChange={(e) => {
+                      const on = e.target.checked
+                      setVoiceOn(on)
+                      try {
+                        localStorage.setItem(VOICE_LS_KEY, on ? '1' : '0')
+                      } catch {
+                        /* ignore */
+                      }
+                      if (!on) stopVoice()
+                    }}
+                  />
+                  <span className="rafay-bot__voice-label">Speak replies</span>
+                </label>
+                <button className="rafay-bot__btn rafay-bot__btn--ghost" type="button" onClick={() => signOut(auth)}>
+                  Sign out
+                </button>
+              </div>
             </div>
+            {voiceStatusLoaded && !voiceAvailable && (
+              <p className="rafay-bot__voice-hint">
+                Voice is off until the server has <code>ELEVENLABS_API_KEY</code> and <code>ELEVENLABS_VOICE_ID</code>.
+              </p>
+            )}
             <div className="rafay-bot__thread" role="log" aria-live="polite">
               {messages.length === 0 && (
                 <p className="rafay-bot__hint">Ask anything — bio, trips (Tesla + Google), etc.</p>
