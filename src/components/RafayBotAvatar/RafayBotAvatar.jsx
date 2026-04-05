@@ -16,25 +16,27 @@ export default function RafayBotAvatar({ mood, subtitle }) {
     >
       <div className="rafay-bot-avatar__glow" />
       <div className="rafay-bot-avatar__figure">
-        <img
-          className="rafay-bot-avatar__img"
-          src="/rafay-bot-mascot.png"
-          alt=""
-          width={200}
-          height={200}
-          decoding="async"
-        />
-        {speaking ? (
+        <div className="rafay-bot-avatar__zoom">
           <img
-            className="rafay-bot-avatar__jaw"
+            className="rafay-bot-avatar__img"
             src="/rafay-bot-mascot.png"
             alt=""
             width={200}
             height={200}
             decoding="async"
-            aria-hidden
           />
-        ) : null}
+          {speaking ? (
+            <img
+              className="rafay-bot-avatar__jaw"
+              src="/rafay-bot-mascot.png"
+              alt=""
+              width={200}
+              height={200}
+              decoding="async"
+              aria-hidden
+            />
+          ) : null}
+        </div>
       </div>
       {subtitle ? (
         <p className="rafay-bot-avatar__caption" title={subtitle}>

@@ -43,36 +43,44 @@
   animation: rafay-bot-avatar-float 5s ease-in-out infinite;
 }
 
-.rafay-bot-avatar--thinking .rafay-bot-avatar__figure {
-  animation: rafay-bot-avatar-float 2.5s ease-in-out infinite, rafay-bot-avatar-wobble 0.8s ease-in-out infinite;
+/*
+ * Source art is landscape (~16:9); face sits in the upper half with empty space below.
+ * Zoom the shared wrapper so the circle frames the head, then clip the jaw layer to the mouth band.
+ */
+.rafay-bot-avatar__zoom {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  transform: scale(1.46);
+  transform-origin: 50% 24%;
 }
 
-.rafay-bot-avatar--speaking .rafay-bot-avatar__figure {
-  animation: rafay-bot-avatar-float 5s ease-in-out infinite;
-}
-
-.rafay-bot-avatar__img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  object-position: center top;
-}
-
-/* Clipped copy of the lower face — scaleY simulates lip/jaw motion while TTS plays */
-.rafay-bot-avatar__jaw {
+.rafay-bot-avatar__zoom .rafay-bot-avatar__img,
+.rafay-bot-avatar__zoom .rafay-bot-avatar__jaw {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: center top;
+  /* Anchor on the upper portrait so the face fills the round crop */
+  object-position: 50% 12%;
+}
+
+/* Clipped copy: only the lower face (mouth + beard) — inset tuned for zoomed framing */
+.rafay-bot-avatar__jaw {
   pointer-events: none;
-  /* Show roughly from mid-face down so the mouth region moves, not the eyes */
-  clip-path: inset(52% 0 0 0);
-  transform-origin: 50% 58%;
+  clip-path: inset(38% 0 0 0);
+  transform-origin: 50% 44%;
   animation: rafay-bot-avatar-jaw-talk 0.2s ease-in-out infinite alternate;
+}
+
+.rafay-bot-avatar--thinking .rafay-bot-avatar__figure {
+  animation: rafay-bot-avatar-float 2.5s ease-in-out infinite, rafay-bot-avatar-wobble 0.8s ease-in-out infinite;
+}
+
+.rafay-bot-avatar--speaking .rafay-bot-avatar__figure {
+  animation: rafay-bot-avatar-float 5s ease-in-out infinite;
 }
 
 .rafay-bot-avatar--speaking .rafay-bot-avatar__img {
@@ -166,11 +174,9 @@
 @keyframes rafay-bot-avatar-speak-pulse {
   0%,
   100% {
-    transform: scale(1);
     filter: brightness(1);
   }
   50% {
-    transform: scale(1.02);
     filter: brightness(1.05);
   }
 }
@@ -186,11 +192,9 @@
 
 @keyframes rafay-bot-avatar-prepare-pulse {
   0% {
-    transform: scale(1);
     filter: brightness(0.96);
   }
   100% {
-    transform: scale(1.02);
     filter: brightness(1.04);
   }
 }
