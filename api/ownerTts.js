@@ -15,6 +15,7 @@ import express from 'express'
 import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { requireOwner } from './authOwner.js'
+import { recordElevenLabsCharacters } from './usageLedger.js'
 import { stripMarkdownForSpeech } from './ttsStrip.js'
 
 const router = express.Router()
@@ -171,6 +172,8 @@ router.post('/owner-tts', requireOwner, async (req, res) => {
         apiBase: base,
       })
     }
+
+    recordElevenLabsCharacters(text.length)
 
     if (!elRes.body) {
       return res.status(502).json({ error: 'Eleven Labs returned an empty body stream.' })

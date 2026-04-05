@@ -3,6 +3,8 @@
  */
 import Anthropic from '@anthropic-ai/sdk'
 import { haCallService, haGetState, haListEntities } from './homeAssistantClient.js'
+import { getProviderUsageSummary } from './usageSummary.js'
+import { recordAnthropicUsage } from './usageLedger.js'
 import {
   estimateTeslaTrip,
   getTeslaChargeState,
@@ -16,6 +18,7 @@ Scope (answer only these kinds of requests):
 - High-level questions about this agent itself: what it is for, how external agents might call the site A2A endpoint, what capabilities are advertised (within your knowledge).
 - When Tesla tools are available in this session: questions about Rafay's linked Tesla vehicles — trip range estimates, current charge/rated miles, listing vehicles — using only the provided tools and summarizing their results.
 - When Home Assistant tools are available (owner session only): controlling and reading his smart-home devices through his linked Home Assistant (lights, switches, etc.) using only the provided tools.
+- When usage tools are available (owner session only): estimated spend / usage for Anthropic, ElevenLabs, and optional GCP billing data — using only the provided summary tool; clarify these are estimates not invoices.
 
 Out of scope (do not answer as a general assistant; refuse briefly and politely):
 - General knowledge, trivia, homework, news, math, or unrelated how-to questions.
@@ -170,10 +173,27 @@ const HA_TOOLS = [
   },
 ]
 
+const USAGE_TOOLS_SYSTEM = `
+
+Provider usage (owner): You may report estimated Anthropic, ElevenLabs, and GCP month-to-date figures using get_provider_usage_summary. Say clearly that dollar amounts are estimates from server-side counters and configured rates (and BigQuery export for GCP when set), not official invoices or tax.`
+
+const USAGE_TOOLS = [
+  {
+    name: 'get_provider_usage_summary',
+    description:
+      'Estimated usage and cost for the current calendar month: Anthropic token totals and estimated USD, ElevenLabs character counts and estimated USD, and GCP cost from BigQuery billing export when configured. Use when the owner asks about API spend, running costs, or usage for this site agent.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+]
+
 function buildSystemPrompt({ teslaToolMode, haToolMode, isOwner }) {
   let s = SYSTEM_PROMPT
   if (isOwner) {
     s += OWNER_CONTEXT
+    s += USAGE_TOOLS_SYSTEM
   }
   if (teslaToolMode === 'tools') {
     s += TESLA_TOOLS_SYSTEM
@@ -205,7 +225,12 @@ export async function runA2aAgent(userText, opts) {
     isOwner &&
     !!(process.env.HOME_ASSISTANT_URL && process.env.HOME_ASSISTANT_TOKEN)
 
-  const tools = [...(teslaOk ? TESLA_TOOLS : []), ...(haOk ? HA_TOOLS : [])]
+  const usageOk = isOwner
+  const tools = [
+    ...(teslaOk ? TESLA_TOOLS : []),
+    ...(haOk ? HA_TOOLS : []),
+    ...(usageOk ? USAGE_TOOLS : []),
+  ]
   const toolsParam = tools.length > 0 ? tools : undefined
 
   const client = new Anthropic()
@@ -226,6 +251,10 @@ export async function runA2aAgent(userText, opts) {
       messages,
       tools: toolsParam,
     })
+
+    if (response.usage) {
+      recordAnthropicUsage(response.usage)
+    }
 
     const hasToolUse = response.content.some((b) => b.type === 'tool_use')
     if (!hasToolUse) {
@@ -267,6 +296,8 @@ export async function runA2aAgent(userText, opts) {
             Object.assign(body, input.service_data)
           }
           payload = await haCallService(input.domain, input.service, body)
+        } else if (block.name === 'get_provider_usage_summary') {
+          payload = await getProviderUsageSummary()
         } else {
           payload = { error: `Unknown tool: ${block.name}` }
         }
