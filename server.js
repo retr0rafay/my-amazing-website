@@ -8,7 +8,6 @@ import express from 'express'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
-import gamingRouter from './api/gaming.js'
 import havenRouter from './api/haven.js'
 import a2aRouter from './api/a2a.js'
 import ownerChatRouter from './api/ownerChat.js'
@@ -20,8 +19,6 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const app = express()
 app.use(express.json({ limit: '2mb' }))
 
-// API (PSN gaming) before static so /api/gaming is hit
-app.use('/api', gamingRouter)
 app.use('/api', havenRouter)
 app.use('/api', a2aRouter)
 app.use('/api', ownerChatRouter)
@@ -64,14 +61,6 @@ function getMetaForPath(pathname, baseUrl) {
       description: 'Writings and thoughts on tech, software engineering, and more.',
       image: `${baseUrl}${DEFAULT_IMAGE}`,
       url: `${baseUrl}/blog`,
-    }
-  }
-  if (pathname === '/gaming') {
-    return {
-      title: `Gaming | ${SITE_NAME}`,
-      description: 'Recently played PlayStation games and playtime.',
-      image: `${baseUrl}${DEFAULT_IMAGE}`,
-      url: `${baseUrl}/gaming`,
     }
   }
   if (pathname === '/my-life') {

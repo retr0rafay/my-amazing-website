@@ -55,17 +55,6 @@
       ]
     },
     {
-      "id": "gaming",
-      "name": "PlayStation gaming",
-      "description": "Rafay plays on PlayStation; online handle retr0rafay. Recent activity may appear on rafaysyed.dev/gaming.",
-      "tags": ["playstation", "psn", "gaming"],
-      "examples": [
-        "What is Rafay's PlayStation handle?",
-        "Does Rafay game on PS?",
-        "Where can I see what Rafay has been playing?"
-      ]
-    },
-    {
       "id": "tesla-trip",
       "name": "Tesla trip range (authenticated)",
       "description": "When the server is configured with a secret header, estimates whether rated range is enough for a destination and return using Tesla Fleet API and driving directions. Not a substitute for in-car navigation.",

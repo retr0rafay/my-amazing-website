@@ -5,7 +5,6 @@ import Layout from './components/Layout'
 import Home from './pages/Home'
 import Blog from './pages/Blog'
 import ArticlePage from './pages/ArticlePage'
-import Gaming from './pages/Gaming'
 import MyLife from './pages/MyLife'
 
 const RafayHaven = lazy(() => import('./pages/RafayHaven'))
@@ -21,7 +20,6 @@ function App() {
               <Route index element={<Home />} />
               <Route path="blog" element={<Blog />} />
               <Route path="blog/:slug" element={<ArticlePage />} />
-              <Route path="gaming" element={<Gaming />} />
               <Route path="my-life" element={<MyLife />} />
               <Route
                 path="rafay-haven"

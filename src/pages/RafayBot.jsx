@@ -317,7 +317,7 @@ export default function RafayBot() {
                     <ul className="rafay-bot__empty-chips">
                       <li>Your background &amp; career</li>
                       <li>This site &amp; the public A2A agent</li>
-                      <li>Gaming &amp; PlayStation</li>
+                      <li>Interests &amp; hobbies</li>
                       <li>Tesla range / trips (with voice if enabled)</li>
                     </ul>
                   </div>

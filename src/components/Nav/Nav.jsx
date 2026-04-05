@@ -47,12 +47,6 @@ export default function Nav() {
           Blog
         </NavLink>
         <NavLink
-          to="/gaming"
-          className={({ isActive }) => `nav__link ${isActive ? 'nav__link--active' : ''}`}
-        >
-          Gaming
-        </NavLink>
-        <NavLink
           to="/my-life"
           className={({ isActive }) => `nav__link ${isActive ? 'nav__link--active' : ''}`}
         >

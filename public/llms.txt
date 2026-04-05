@@ -13,7 +13,7 @@
 - Resides in Ball Ground, GA, USA
 - Primary focus: backend development; also works in frontend
 - Public social: LinkedIn https://www.linkedin.com/in/rafaysyed-ai/ — GitHub https://github.com/retr0rafay (no other social media)
-- PlayStation gamer; online handle retr0rafay — gaming: https://rafaysyed.dev/gaming
+- PlayStation Network handle: retr0rafay
 - Site: https://rafaysyed.dev
 
 ## Agent protocols
