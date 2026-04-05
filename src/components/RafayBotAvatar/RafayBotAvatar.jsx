@@ -1,6 +1,6 @@
 /**
  * Rafay Bot — anime-style portrait + CSS moods (cyan / water theme).
- * Moods: idle | thinking | preparing | speaking (subtle pulse when speaking).
+ * Moods: idle | thinking | preparing | speaking (jaw/lip motion when speaking).
  */
 import './RafayBotAvatar.css'
 
@@ -24,6 +24,17 @@ export default function RafayBotAvatar({ mood, subtitle }) {
           height={200}
           decoding="async"
         />
+        {speaking ? (
+          <img
+            className="rafay-bot-avatar__jaw"
+            src="/rafay-bot-mascot.png"
+            alt=""
+            width={200}
+            height={200}
+            decoding="async"
+            aria-hidden
+          />
+        ) : null}
       </div>
       {subtitle ? (
         <p className="rafay-bot-avatar__caption" title={subtitle}>
