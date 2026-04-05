@@ -1,7 +1,8 @@
 /**
- * Shared Claude + optional Tesla tool loop for public /a2a and authenticated /owner-chat.
+ * Shared Claude + optional Tesla / Home Assistant tool loop for public /a2a and owner flows.
  */
 import Anthropic from '@anthropic-ai/sdk'
+import { haCallService, haGetState, haListEntities } from './homeAssistantClient.js'
 import {
   estimateTeslaTrip,
   getTeslaChargeState,
@@ -14,14 +15,15 @@ Scope (answer only these kinds of requests):
 - Questions about Rafay Syed: background, career, education, public links, skills and interests as described below, and what appears on rafaysyed.dev (portfolio, blog, etc.).
 - High-level questions about this agent itself: what it is for, how external agents might call the site A2A endpoint, what capabilities are advertised (within your knowledge).
 - When Tesla tools are available in this session: questions about Rafay's linked Tesla vehicles — trip range estimates, current charge/rated miles, listing vehicles — using only the provided tools and summarizing their results.
+- When Home Assistant tools are available (owner session only): controlling and reading his smart-home devices through his linked Home Assistant (lights, switches, etc.) using only the provided tools.
 
 Out of scope (do not answer as a general assistant; refuse briefly and politely):
 - General knowledge, trivia, homework, news, math, or unrelated how-to questions.
 - Unrelated programming, debugging, or writing code for the user unless it is narrowly about how Rafay's public site or agent integration works.
 - Medical, legal, financial, or other professional advice unrelated to Rafay's public bio.
-- Anything that is clearly not about Rafay, his site, or (when tools are enabled) his Tesla data as exposed through tools.
+- Anything that is clearly not about Rafay, his site, or (when tools are enabled) his Tesla or Home Assistant data as exposed through tools.
 
-When refusing: one short paragraph. Say this agent is scoped to Rafay's site and public bio (and Tesla tools when available), and name 1–2 example topics they can ask instead. Do not apologize excessively or lecture.
+When refusing: one short paragraph. Say this agent is scoped to Rafay's site and public bio (and Tesla / Home Assistant tools when available), and name 1–2 example topics they can ask instead. Do not apologize excessively or lecture.
 
 About Rafay (use only for in-scope questions):
 - Software engineer; professional experience since August 2016
@@ -57,7 +59,7 @@ const OWNER_CONTEXT = `
 
 [Request authentication: The caller presented a site owner credential. Assume you are speaking directly with Rafay Syed (the site owner), not a random third party. You may address him as "you" when helpful; keep the same factual boundaries about public bio info. Being the owner does not remove scope limits — you are still the site agent, not a general-purpose chatbot for unrelated tasks.
 
-Owner-oriented automation: prioritize framing help around his goals — home improvement mindset, Tesla/car info via tools when available, reminders and notifications in principle, and future email/banking-adjacent ideas — but do not claim you can read his email, bank accounts, or smart-home devices unless a tool actually exists in this session. Suggest concrete next steps or what would need to be built later.]`
+Owner-oriented automation: prioritize framing help around his goals — home improvement mindset, Tesla/car info via tools when available, Home Assistant device control when those tools are available, reminders and notifications in principle, and future email/banking-adjacent ideas — but do not claim you can read his email or bank accounts unless a tool exists. Suggest concrete next steps or what would need to be built later.]`
 
 const TESLA_TOOLS = [
   {
@@ -111,7 +113,64 @@ const TESLA_TOOLS = [
   },
 ]
 
-function buildSystemPrompt(teslaToolMode, isOwner) {
+const HA_TOOLS_SYSTEM = `
+
+Home Assistant: Rafay's house uses Home Assistant. Entity IDs look like light.kitchen, switch.office. Use home_assistant_list_entities with domain "light" (or switch, etc.) to discover entities and friendly names. Use home_assistant_get_state to read a specific entity. Use home_assistant_call_service with the correct domain and service — e.g. domain "light", service "turn_off", entity_id "light.kitchen". For dimming use service "turn_on" with service_data containing brightness_pct (0-100) or brightness (0-255). Confirm actions briefly after success; if something fails, report the error message.`
+
+const HA_TOOLS = [
+  {
+    name: 'home_assistant_list_entities',
+    description:
+      'List entities (entity_id, state, friendly_name) from Home Assistant, optionally filtered by domain such as light, switch, climate, scene.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        domain: {
+          type: 'string',
+          description:
+            'Optional filter: e.g. light, switch — only entities whose entity_id starts with "domain." (e.g. light.*). Omit to return many entity types (truncated).',
+        },
+      },
+    },
+  },
+  {
+    name: 'home_assistant_get_state',
+    description: 'Read current state and attributes for one entity (e.g. light.kitchen).',
+    input_schema: {
+      type: 'object',
+      properties: {
+        entity_id: {
+          type: 'string',
+          description: 'Home Assistant entity_id (e.g. light.living_room)',
+        },
+      },
+      required: ['entity_id'],
+    },
+  },
+  {
+    name: 'home_assistant_call_service',
+    description:
+      'Call a Home Assistant service to control devices. Examples: domain light + service turn_on / turn_off / toggle; domain scene + service turn_on; pass entity_id. Optional service_data for brightness_pct, rgb_color, etc.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        domain: { type: 'string', description: 'e.g. light, switch, scene, climate, cover' },
+        service: { type: 'string', description: 'e.g. turn_on, turn_off, toggle' },
+        entity_id: {
+          type: 'string',
+          description: 'Target entity_id, or comma-separated IDs if the service accepts multiple',
+        },
+        service_data: {
+          type: 'object',
+          description: 'Optional extra fields merged into the service call (brightness_pct, temperature, etc.)',
+        },
+      },
+      required: ['domain', 'service', 'entity_id'],
+    },
+  },
+]
+
+function buildSystemPrompt({ teslaToolMode, haToolMode, isOwner }) {
   let s = SYSTEM_PROMPT
   if (isOwner) {
     s += OWNER_CONTEXT
@@ -120,6 +179,9 @@ function buildSystemPrompt(teslaToolMode, isOwner) {
     s += TESLA_TOOLS_SYSTEM
   } else if (process.env.A2A_TESLA_SECRET && !isOwner) {
     s += UNAUTH_TRIP_HINT
+  }
+  if (haToolMode === 'tools') {
+    s += HA_TOOLS_SYSTEM
   }
   return s
 }
@@ -139,9 +201,19 @@ function extractTextBlocks(content) {
  */
 export async function runA2aAgent(userText, opts) {
   const { teslaOk, isOwner } = opts
+  const haOk =
+    isOwner &&
+    !!(process.env.HOME_ASSISTANT_URL && process.env.HOME_ASSISTANT_TOKEN)
+
+  const tools = [...(teslaOk ? TESLA_TOOLS : []), ...(haOk ? HA_TOOLS : [])]
+  const toolsParam = tools.length > 0 ? tools : undefined
+
   const client = new Anthropic()
-  const system = buildSystemPrompt(teslaOk ? 'tools' : 'no-tools', isOwner)
-  const tools = teslaOk ? TESLA_TOOLS : undefined
+  const system = buildSystemPrompt({
+    teslaToolMode: teslaOk ? 'tools' : 'no-tools',
+    haToolMode: haOk ? 'tools' : 'no-tools',
+    isOwner,
+  })
 
   let messages = [{ role: 'user', content: userText }]
   let lastText = ''
@@ -152,7 +224,7 @@ export async function runA2aAgent(userText, opts) {
       max_tokens: 2048,
       system,
       messages,
-      tools,
+      tools: toolsParam,
     })
 
     const hasToolUse = response.content.some((b) => b.type === 'tool_use')
@@ -182,6 +254,19 @@ export async function runA2aAgent(userText, opts) {
             origin_address: input.origin_address,
             vehicle_query: input.vehicle_query,
           })
+        } else if (block.name === 'home_assistant_list_entities') {
+          const input = block.input || {}
+          payload = await haListEntities(input.domain)
+        } else if (block.name === 'home_assistant_get_state') {
+          const input = block.input || {}
+          payload = await haGetState(input.entity_id)
+        } else if (block.name === 'home_assistant_call_service') {
+          const input = block.input || {}
+          const body = { entity_id: input.entity_id }
+          if (input.service_data && typeof input.service_data === 'object') {
+            Object.assign(body, input.service_data)
+          }
+          payload = await haCallService(input.domain, input.service, body)
         } else {
           payload = { error: `Unknown tool: ${block.name}` }
         }
