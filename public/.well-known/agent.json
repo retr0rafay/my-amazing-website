@@ -57,11 +57,12 @@
     {
       "id": "tesla-trip",
       "name": "Tesla trip range (authenticated)",
-      "description": "When the server is configured with a secret header, estimates whether rated range is enough for a destination and return using Tesla Fleet API and driving directions. Not a substitute for in-car navigation.",
+      "description": "When the server is configured with a secret header, uses Tesla Fleet API for trip range (with driving directions) and optional remote door lock/unlock. Not a substitute for in-car navigation.",
       "tags": ["tesla", "ev", "range", "optional"],
       "examples": [
         "Do I have enough charge to drive to Boston and back?",
-        "How much range might I have left if I go to Philadelphia?"
+        "How much range might I have left if I go to Philadelphia?",
+        "Lock my Tesla"
       ]
     }
   ]

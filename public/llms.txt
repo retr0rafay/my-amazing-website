@@ -20,6 +20,6 @@
 
 - Agent card: https://rafaysyed.dev/.well-known/agent.json
 - A2A messaging: POST https://rafaysyed.dev/api/a2a — JSON-RPC 2.0, method "message/send"
-- Optional Tesla trip range (Fleet + Google Directions): same A2A URL with server-configured `x-a2a-tesla-secret` header (or `Authorization: Bearer …`); requires OAuth scopes including vehicle data (and `vehicle_location` for car GPS).
+- Optional Tesla (Fleet + Google Directions for trips; door lock/unlock via Fleet when tools allow): same A2A URL with server-configured `x-a2a-tesla-secret` header (or `Authorization: Bearer …`); requires OAuth scopes including vehicle data (`vehicle_location` for car GPS; `vehicle_cmds` for wake and lock/unlock).
 - Optional owner-authenticated tone: `x-a2a-owner-secret` matching server `A2A_OWNER_SECRET`, or reuse the Tesla secret header (same effect for identity). Other callers get the public agent only.
 - This file: https://rafaysyed.dev/llms.txt

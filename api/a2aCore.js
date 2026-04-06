@@ -7,6 +7,7 @@ import {
   estimateTeslaTrip,
   getTeslaChargeState,
   listTeslaVehicles,
+  teslaFleetDoorCommand,
 } from './teslaTripEstimate.js'
 
 const SYSTEM_PROMPT = `You are Rafay Syed's personal site agent for rafaysyed.dev — not a general-purpose chatbot or open-ended assistant.
@@ -14,7 +15,7 @@ const SYSTEM_PROMPT = `You are Rafay Syed's personal site agent for rafaysyed.de
 Scope (answer only these kinds of requests):
 - Questions about Rafay Syed: background, career, education, public links, skills and interests as described below, and what appears on rafaysyed.dev (portfolio, blog, etc.).
 - High-level questions about this agent itself: what it is for, how external agents might call the site A2A endpoint, what capabilities are advertised (within your knowledge).
-- When Tesla tools are available in this session: questions about Rafay's linked Tesla vehicles — trip range estimates, current charge/rated miles, listing vehicles — using only the provided tools and summarizing their results.
+- When Tesla tools are available in this session: questions about Rafay's linked Tesla vehicles — trip range estimates, current charge/rated miles, listing vehicles, and (when explicitly requested by the owner) remote door lock/unlock via Fleet — using only the provided tools and summarizing their results.
 - When Home Assistant tools are available (owner session only): controlling and reading his smart-home devices through his linked Home Assistant (lights, switches, etc.) using only the provided tools.
 
 Out of scope (do not answer as a general assistant; refuse briefly and politely):
@@ -49,7 +50,9 @@ Be concise and friendly within scope. If you don't know something specific about
 
 const TESLA_TOOLS_SYSTEM = `
 
-Tesla account may have multiple vehicles. Use list_tesla_vehicles when the user asks about "the other car" or which vehicle is used, or when you need display names to pick the right car. For current battery % and rated miles without a destination, use get_tesla_charge_state with vehicle_query (e.g. "Model Y", a nickname, or last 6 of VIN). For trip feasibility, use estimate_tesla_trip with destination and optional vehicle_query so the right car is selected (defaults to first vehicle or TESLA_VIN_FILTER if set). Use destination as a place name or full address (e.g. "Boston MA"). If the car has no GPS, ask for a starting address and call again with origin_address set. Summarize JSON in plain language and note that figures are rough estimates, not guarantees.`
+Tesla account may have multiple vehicles. Use list_tesla_vehicles when the user asks about "the other car" or which vehicle is used, or when you need display names to pick the right car. For current battery % and rated miles without a destination, use get_tesla_charge_state with vehicle_query (e.g. "Model Y", a nickname, or last 6 of VIN). For trip feasibility, use estimate_tesla_trip with destination and optional vehicle_query so the right car is selected (defaults to first vehicle or TESLA_VIN_FILTER if set). Use destination as a place name or full address (e.g. "Boston MA"). If the car has no GPS, ask for a starting address and call again with origin_address set. Summarize JSON in plain language and note that figures are rough estimates, not guarantees.
+
+For remote lock or unlock only when the user clearly asks to lock or unlock the car: use tesla_fleet_door_command with action "lock" or "unlock" and optional vehicle_query. Confirm success or relay errors; do not use this for unrelated requests.`
 
 const UNAUTH_TRIP_HINT = `
 
@@ -109,6 +112,27 @@ const TESLA_TOOLS = [
         },
       },
       required: ['destination'],
+    },
+  },
+  {
+    name: 'tesla_fleet_door_command',
+    description:
+      'Lock or unlock the vehicle doors via Tesla Fleet API (door_lock / door_unlock). Requires vehicle_cmds OAuth scope and usually a paired virtual key on the vehicle. Use only when the user explicitly asks to lock or unlock.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        action: {
+          type: 'string',
+          enum: ['lock', 'unlock'],
+          description: 'Whether to lock or unlock all doors.',
+        },
+        vehicle_query: {
+          type: 'string',
+          description:
+            'Optional: which car — nickname, "Model Y", model name, full or partial VIN. Omit to use default (first vehicle or TESLA_VIN_FILTER).',
+        },
+      },
+      required: ['action'],
     },
   },
 ]
@@ -252,6 +276,12 @@ export async function runA2aAgent(userText, opts) {
           payload = await estimateTeslaTrip({
             destination: input.destination,
             origin_address: input.origin_address,
+            vehicle_query: input.vehicle_query,
+          })
+        } else if (block.name === 'tesla_fleet_door_command') {
+          const input = block.input || {}
+          payload = await teslaFleetDoorCommand({
+            action: input.action,
             vehicle_query: input.vehicle_query,
           })
         } else if (block.name === 'home_assistant_list_entities') {

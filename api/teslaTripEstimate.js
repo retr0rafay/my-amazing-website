@@ -3,12 +3,13 @@
  *
  * Env: GOOGLE_MAPS_API_KEY (Directions API enabled), same Tesla vars as teslaChargeNotify.
  * Optional: TESLA_VIN_FILTER (default subset), TESLA_WAKE_BEFORE_NOTIFY, wake timeouts.
- * OAuth: vehicle_device_data; car GPS needs vehicle_location. vehicle_cmds if wake is used.
+ * OAuth: vehicle_device_data; car GPS needs vehicle_location. vehicle_cmds for wake and for door_lock/door_unlock.
  * Firmware 2023.38+: request location_data via the endpoints query param or lat/lon may be omitted.
  */
 import {
   refreshAccessToken,
   fleetGet,
+  fleetPost,
   extractChargeState,
   extractVehicleState,
   tryWakeAndWaitOnline,
@@ -174,6 +175,101 @@ export async function getTeslaChargeState(opts = {}) {
       rated != null && !Number.isNaN(Number(rated)) ? round2(Number(rated)) : null,
     charge_limit_soc: limit != null ? limit : null,
     charging_state: charging || null,
+  }
+}
+
+/**
+ * Lock or unlock all doors via Fleet POST .../command/door_lock|door_unlock.
+ * Requires vehicle_cmds OAuth scope. Many vehicles also need the app virtual key installed; unsigned commands may be rejected.
+ *
+ * @param {{ action: 'lock' | 'unlock', vehicle_query?: string }} opts
+ */
+export async function teslaFleetDoorCommand(opts = {}) {
+  const action = String(opts?.action || '')
+    .trim()
+    .toLowerCase()
+  if (action !== 'lock' && action !== 'unlock') {
+    return { error: 'action must be "lock" or "unlock"' }
+  }
+
+  const vehicleQuery = opts?.vehicle_query != null ? String(opts.vehicle_query).trim() : ''
+  const cmd = action === 'lock' ? 'door_lock' : 'door_unlock'
+
+  const accessToken = await refreshAccessToken()
+  const { res: listRes, data: listData } = await fleetGet(accessToken, '/api/1/vehicles')
+  if (!listRes.ok) {
+    return { error: `Tesla vehicle list failed: ${listRes.status}` }
+  }
+
+  const vehicles = normalizeVehicleList(listData)
+  if (!vehicles.length) {
+    return { error: 'No vehicles on this account' }
+  }
+
+  const v = pickVehicle(vehicles, vehicleQuery)
+  if (!v) {
+    return {
+      error:
+        'Could not select a vehicle. Use list_tesla_vehicles or pass vehicle_query (e.g. Model Y, nickname, or VIN).',
+    }
+  }
+
+  const vin = v.vin || v.id_s
+  const displayName = v.display_name || v.name || 'Vehicle'
+
+  const wakeBefore =
+    process.env.TESLA_WAKE_BEFORE_NOTIFY === 'true' || process.env.TESLA_WAKE_BEFORE_NOTIFY === '1'
+  const wakeTimeoutMs = Math.max(
+    5000,
+    parseInt(process.env.TESLA_WAKE_TIMEOUT_MS || '120000', 10) || 120000,
+  )
+  const wakePollMs = Math.max(
+    1000,
+    parseInt(process.env.TESLA_WAKE_POLL_INTERVAL_MS || '4000', 10) || 4000,
+  )
+
+  if (wakeBefore && vin) {
+    const vPath = `/api/1/vehicles/${encodeURIComponent(vin)}`
+    const { res: stRes, data: stData } = await fleetGet(accessToken, vPath)
+    const alreadyOnline = stRes.ok && extractVehicleState(stData) === 'online'
+    if (!alreadyOnline) {
+      await tryWakeAndWaitOnline(accessToken, vin, wakeTimeoutMs, wakePollMs)
+    }
+  }
+
+  const path = `/api/1/vehicles/${encodeURIComponent(vin)}/command/${cmd}`
+  const { res: cmdRes, data: cmdData } = await fleetPost(accessToken, path, {})
+
+  const inner = cmdData?.response ?? cmdData
+  const reason = inner?.reason != null ? String(inner.reason) : ''
+
+  if (!cmdRes.ok) {
+    const hint =
+      cmdData?.error ||
+      cmdData?.error_description ||
+      reason ||
+      cmdRes.statusText
+    return {
+      error: `Tesla ${cmd} failed: ${cmdRes.status} ${hint || ''}`.trim(),
+      vehicle_name: displayName,
+      hint:
+        'Ensure OAuth includes vehicle_cmds and the vehicle has this app virtual key paired (Fleet may require signed commands on consumer vehicles).',
+    }
+  }
+
+  if (inner && inner.result === false && reason) {
+    return {
+      error: `Tesla ${cmd} rejected: ${reason}`,
+      vehicle_name: displayName,
+    }
+  }
+
+  return {
+    ok: true,
+    action,
+    command: cmd,
+    vehicle_name: displayName,
+    result: inner ?? null,
   }
 }
 
