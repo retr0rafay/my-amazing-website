@@ -219,6 +219,50 @@ function extractTextBlocks(content) {
     .join('\n')
 }
 
+async function runToolBlock(block) {
+  if (block.name === 'list_tesla_vehicles') {
+    return listTeslaVehicles()
+  }
+  if (block.name === 'get_tesla_charge_state') {
+    const input = block.input || {}
+    return getTeslaChargeState({
+      vehicle_query: input.vehicle_query,
+    })
+  }
+  if (block.name === 'estimate_tesla_trip') {
+    const input = block.input || {}
+    return estimateTeslaTrip({
+      destination: input.destination,
+      origin_address: input.origin_address,
+      vehicle_query: input.vehicle_query,
+    })
+  }
+  if (block.name === 'tesla_fleet_door_command') {
+    const input = block.input || {}
+    return teslaFleetDoorCommand({
+      action: input.action,
+      vehicle_query: input.vehicle_query,
+    })
+  }
+  if (block.name === 'home_assistant_list_entities') {
+    const input = block.input || {}
+    return haListEntities(input.domain)
+  }
+  if (block.name === 'home_assistant_get_state') {
+    const input = block.input || {}
+    return haGetState(input.entity_id)
+  }
+  if (block.name === 'home_assistant_call_service') {
+    const input = block.input || {}
+    const body = { entity_id: input.entity_id }
+    if (input.service_data && typeof input.service_data === 'object') {
+      Object.assign(body, input.service_data)
+    }
+    return haCallService(input.domain, input.service, body)
+  }
+  return { error: `Unknown tool: ${block.name}` }
+}
+
 /**
  * @param {string} userText
  * @param {{ teslaOk: boolean, isOwner: boolean }} opts
@@ -242,10 +286,13 @@ export async function runA2aAgent(userText, opts) {
   let messages = [{ role: 'user', content: userText }]
   let lastText = ''
 
-  for (let turn = 0; turn < 8; turn++) {
+  const maxTurns = Math.max(2, parseInt(process.env.A2A_MAX_TURNS || '6', 10) || 6)
+  const maxTokens = Math.max(256, parseInt(process.env.A2A_MAX_TOKENS || '1024', 10) || 1024)
+
+  for (let turn = 0; turn < maxTurns; turn++) {
     const response = await client.messages.create({
       model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 2048,
+      max_tokens: maxTokens,
       system,
       messages,
       tools: toolsParam,
@@ -259,56 +306,22 @@ export async function runA2aAgent(userText, opts) {
 
     messages.push({ role: 'assistant', content: response.content })
 
-    const toolResults = []
-    for (const block of response.content) {
-      if (block.type !== 'tool_use') continue
-      let payload
-      try {
-        if (block.name === 'list_tesla_vehicles') {
-          payload = await listTeslaVehicles()
-        } else if (block.name === 'get_tesla_charge_state') {
-          const input = block.input || {}
-          payload = await getTeslaChargeState({
-            vehicle_query: input.vehicle_query,
-          })
-        } else if (block.name === 'estimate_tesla_trip') {
-          const input = block.input || {}
-          payload = await estimateTeslaTrip({
-            destination: input.destination,
-            origin_address: input.origin_address,
-            vehicle_query: input.vehicle_query,
-          })
-        } else if (block.name === 'tesla_fleet_door_command') {
-          const input = block.input || {}
-          payload = await teslaFleetDoorCommand({
-            action: input.action,
-            vehicle_query: input.vehicle_query,
-          })
-        } else if (block.name === 'home_assistant_list_entities') {
-          const input = block.input || {}
-          payload = await haListEntities(input.domain)
-        } else if (block.name === 'home_assistant_get_state') {
-          const input = block.input || {}
-          payload = await haGetState(input.entity_id)
-        } else if (block.name === 'home_assistant_call_service') {
-          const input = block.input || {}
-          const body = { entity_id: input.entity_id }
-          if (input.service_data && typeof input.service_data === 'object') {
-            Object.assign(body, input.service_data)
-          }
-          payload = await haCallService(input.domain, input.service, body)
-        } else {
-          payload = { error: `Unknown tool: ${block.name}` }
+    const blocks = response.content.filter((b) => b.type === 'tool_use')
+    const toolResults = await Promise.all(
+      blocks.map(async (block) => {
+        let payload
+        try {
+          payload = await runToolBlock(block)
+        } catch (e) {
+          payload = { error: String(e.message || e) }
         }
-      } catch (e) {
-        payload = { error: String(e.message || e) }
-      }
-      toolResults.push({
-        type: 'tool_result',
-        tool_use_id: block.id,
-        content: JSON.stringify(payload),
-      })
-    }
+        return {
+          type: 'tool_result',
+          tool_use_id: block.id,
+          content: JSON.stringify(payload),
+        }
+      }),
+    )
 
     messages.push({ role: 'user', content: toolResults })
   }
