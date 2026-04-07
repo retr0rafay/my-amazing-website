@@ -3,6 +3,7 @@
  *
  * Env: GOOGLE_MAPS_API_KEY (Directions API enabled), same Tesla vars as teslaChargeNotify.
  * Optional: TESLA_VIN_FILTER (default subset), TESLA_WAKE_BEFORE_NOTIFY, wake timeouts.
+ * Optional: TESLA_COMMAND_PROXY_BASE_URL (Vehicle Command Proxy base URL for signed commands).
  * OAuth: vehicle_device_data; car GPS needs vehicle_location. vehicle_cmds for wake and for door_lock/door_unlock.
  * Firmware 2023.38+: request location_data via the endpoints query param or lat/lon may be omitted.
  */
@@ -178,6 +179,30 @@ export async function getTeslaChargeState(opts = {}) {
   }
 }
 
+function commandProxyBase() {
+  const raw = process.env.TESLA_COMMAND_PROXY_BASE_URL
+  if (!raw || typeof raw !== 'string') return null
+  const trimmed = raw.trim()
+  if (!trimmed) return null
+  return trimmed.replace(/\/+$/, '')
+}
+
+async function signedCommandPost(accessToken, pathname, bodyObj = {}) {
+  const base = commandProxyBase()
+  if (!base) return null
+  const url = `${base}${pathname.startsWith('/') ? pathname : `/${pathname}`}`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(bodyObj),
+  })
+  const data = await res.json().catch(() => ({}))
+  return { res, data }
+}
+
 /**
  * Lock or unlock all doors via Fleet POST .../command/door_lock|door_unlock.
  * Requires vehicle_cmds OAuth scope. Many vehicles also need the app virtual key installed; unsigned commands may be rejected.
@@ -238,7 +263,8 @@ export async function teslaFleetDoorCommand(opts = {}) {
   }
 
   const path = `/api/1/vehicles/${encodeURIComponent(vin)}/command/${cmd}`
-  const { res: cmdRes, data: cmdData } = await fleetPost(accessToken, path, {})
+  const viaProxy = await signedCommandPost(accessToken, path, {})
+  const { res: cmdRes, data: cmdData } = viaProxy || (await fleetPost(accessToken, path, {}))
 
   const inner = cmdData?.response ?? cmdData
   const reason = inner?.reason != null ? String(inner.reason) : ''
@@ -252,8 +278,11 @@ export async function teslaFleetDoorCommand(opts = {}) {
     return {
       error: `Tesla ${cmd} failed: ${cmdRes.status} ${hint || ''}`.trim(),
       vehicle_name: displayName,
+      used_vehicle_command_proxy: Boolean(viaProxy),
       hint:
-        'Ensure OAuth includes vehicle_cmds and the vehicle has this app virtual key paired (Fleet may require signed commands on consumer vehicles).',
+        cmdRes.status === 403 && /vehicle command protocol/i.test(String(hint || ''))
+          ? 'This vehicle requires signed commands. Set TESLA_COMMAND_PROXY_BASE_URL to your Vehicle Command Proxy URL and ensure the app key is paired to the car.'
+          : 'Ensure OAuth includes vehicle_cmds and the vehicle has this app virtual key paired (consumer vehicles may require signed commands via Vehicle Command Proxy).',
     }
   }
 
@@ -269,6 +298,7 @@ export async function teslaFleetDoorCommand(opts = {}) {
     action,
     command: cmd,
     vehicle_name: displayName,
+    used_vehicle_command_proxy: Boolean(viaProxy),
     result: inner ?? null,
   }
 }

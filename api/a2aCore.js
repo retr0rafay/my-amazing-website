@@ -117,7 +117,7 @@ const TESLA_TOOLS = [
   {
     name: 'tesla_fleet_door_command',
     description:
-      'Lock or unlock the vehicle doors via Tesla Fleet API (door_lock / door_unlock). Requires vehicle_cmds OAuth scope and usually a paired virtual key on the vehicle. Use only when the user explicitly asks to lock or unlock.',
+      'Lock or unlock the vehicle doors via Tesla Fleet API (door_lock / door_unlock). Requires vehicle_cmds OAuth scope, a paired virtual key, and for many consumer vehicles a configured Vehicle Command Proxy for signed commands. Use only when the user explicitly asks to lock or unlock.',
     input_schema: {
       type: 'object',
       properties: {
