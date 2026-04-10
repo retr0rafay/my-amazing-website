@@ -1,5 +1,11 @@
 [
   {
+    "slug": "building-your-own-ai-assistant",
+    "title": "Building Your Own AI Assistant Is Already Possible",
+    "date": "2026-04-10",
+    "preview": "Since LLMs have come into the picture, it has never been easier to build your own personal assistant—control devices, get reminders, and remember what you often forget. Here is an overview of how you can build one."
+  },
+  {
     "slug": "hello-world",
     "title": "Hello, World!",
     "date": "2025-02-18",

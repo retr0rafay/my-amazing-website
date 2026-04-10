@@ -200,6 +200,24 @@
 }
 
 /* Reusable inline code / file reference style for blog posts */
+.article__pre {
+  font-family: ui-monospace, 'SF Mono', 'Monaco', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0.75rem 0 1rem 0;
+  padding: 1rem 1.1rem;
+  background: var(--persona-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--persona-text);
+  overflow-x: auto;
+  text-align: left;
+}
+
+.article__body li .article__pre {
+  margin-top: 0.5rem;
+}
+
 .article__body code,
 .article__body .code-ref,
 .code-ref {
@@ -304,6 +322,18 @@
   transition: transform 0.2s ease;
   position: relative;
   z-index: 1;
+}
+
+/* Tall flow diagrams (e.g. SVG) — override default blog image cap */
+.article__img.article__img--flow-diagram {
+  width: min(100%, 680px);
+  max-height: min(92vh, 1020px);
+}
+
+/* Wide app / dashboard screenshots */
+.article__img.article__img--app-screenshot {
+  width: min(100%, 920px);
+  max-height: min(88vh, 780px);
 }
 
 /* Reusable hover expand effect for all blog images (image only) */

@@ -13,6 +13,9 @@ data/
 .env.local
 .env.*.local
 
+# Local TLS (never commit private keys)
+config/*.pem
+
 # Logs
 *.log
 npm-debug.log*
