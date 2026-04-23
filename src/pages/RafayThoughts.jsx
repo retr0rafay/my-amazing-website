@@ -46,7 +46,7 @@ export default function RafayThoughts() {
       setThoughts(Array.isArray(payload.items) ? payload.items : [])
       setThoughtsStatus('')
     } catch {
-      setThoughtsStatus("Could not load Rafay's Thoughts right now.")
+      setThoughtsStatus('Could not load Thoughts right now.')
     } finally {
       setThoughtsLoading(false)
     }
@@ -120,13 +120,12 @@ export default function RafayThoughts() {
   return (
     <main className="thoughts page">
       <SEO
-        title="Rafay's Thoughts"
+        title="Thoughts"
         description="Short updates from Rafay, posted directly on this site."
         path="/rafay-thoughts"
       />
       <div className="thoughts__inner">
-        <h1 className="thoughts__title">Rafay&apos;s Thoughts</h1>
-        <p className="thoughts__state">Short updates from my day-to-day.</p>
+        <h1 className="thoughts__title">Thoughts</h1>
 
         {user && isOwner && (
           <form className="thoughts__form" onSubmit={handlePostThought}>
