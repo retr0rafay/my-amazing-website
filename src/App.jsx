@@ -9,6 +9,7 @@ import MyLife from './pages/MyLife'
 
 const RafayHaven = lazy(() => import('./pages/RafayHaven'))
 const RafayBot = lazy(() => import('./pages/RafayBot'))
+const RafayThoughts = lazy(() => import('./pages/RafayThoughts'))
 
 function App() {
   return (
@@ -21,6 +22,14 @@ function App() {
               <Route path="blog" element={<Blog />} />
               <Route path="blog/:slug" element={<ArticlePage />} />
               <Route path="my-life" element={<MyLife />} />
+              <Route
+                path="rafay-thoughts"
+                element={(
+                  <Suspense fallback={null}>
+                    <RafayThoughts />
+                  </Suspense>
+                )}
+              />
               <Route
                 path="rafay-haven"
                 element={(

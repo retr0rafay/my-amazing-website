@@ -7,6 +7,7 @@ import { getServiceAccountFromEnv, initFirebaseAdmin, requireOwner } from './aut
 const router = express.Router()
 const ALLOWED_MEDIA_TYPES = new Set(['image', 'video', 'other'])
 const MAX_CAPTION_LENGTH = 500
+const MAX_THOUGHT_LENGTH = 280
 const MEDIA_CACHE_CONTROL = 'public, max-age=31536000, immutable'
 
 function getBucketName() {
@@ -117,6 +118,32 @@ router.post('/haven/posts', requireOwner, async (req, res) => {
   }
 })
 
+router.post('/haven/thoughts', requireOwner, async (req, res) => {
+  try {
+    initFirebaseAdmin()
+    const text = String(req.body?.text || '').trim()
+    if (!text) return res.status(400).json({ error: 'text is required' })
+    if (text.length > MAX_THOUGHT_LENGTH) {
+      return res.status(400).json({ error: `Text cannot exceed ${MAX_THOUGHT_LENGTH} chars` })
+    }
+
+    const db = getFirestore()
+    const docRef = db.collection('havenThoughts').doc()
+    await docRef.set({
+      text,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+      sortAt: Date.now(),
+      ownerUid: req.owner.uid,
+      ownerEmail: req.owner.email || null,
+    })
+    return res.status(201).json({ id: docRef.id })
+  } catch (err) {
+    console.error('[haven/thoughts:create]', err.message)
+    return res.status(500).json({ error: 'Could not create thought' })
+  }
+})
+
 router.get('/haven/posts', async (req, res) => {
   try {
     initFirebaseAdmin()
@@ -151,6 +178,31 @@ router.get('/haven/posts', async (req, res) => {
   } catch (err) {
     console.error('[haven/posts:list]', err.message)
     return res.status(500).json({ error: 'Could not load posts' })
+  }
+})
+
+router.get('/haven/thoughts', async (req, res) => {
+  try {
+    initFirebaseAdmin()
+    const db = getFirestore()
+    const limit = Math.min(Math.max(Number(req.query.limit || 30), 1), 100)
+
+    const snap = await db.collection('havenThoughts').orderBy('sortAt', 'desc').limit(limit).get()
+    const items = snap.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        id: doc.id,
+        text: data.text || '',
+        createdAtMs: data.sortAt || 0,
+      }
+    })
+
+    // Thoughts should reflect new posts/deletes immediately for owner UX.
+    res.setHeader('Cache-Control', 'no-store')
+    return res.json({ items })
+  } catch (err) {
+    console.error('[haven/thoughts:list]', err.message)
+    return res.status(500).json({ error: 'Could not load thoughts' })
   }
 })
 
@@ -213,6 +265,30 @@ router.delete('/haven/posts/:id', requireOwner, async (req, res) => {
   } catch (err) {
     console.error('[haven/posts:delete]', err.message)
     return res.status(500).json({ error: 'Could not delete post' })
+  }
+})
+
+router.delete('/haven/thoughts/:id', requireOwner, async (req, res) => {
+  try {
+    initFirebaseAdmin()
+    const id = req.params.id
+    if (!id) return res.status(400).json({ error: 'Thought id is required' })
+
+    const db = getFirestore()
+    const docRef = db.collection('havenThoughts').doc(id)
+    const snap = await docRef.get()
+    if (!snap.exists) return res.status(404).json({ error: 'Thought not found' })
+
+    const data = snap.data() || {}
+    if (data.ownerUid && data.ownerUid !== req.owner.uid) {
+      return res.status(403).json({ error: 'Forbidden' })
+    }
+
+    await docRef.delete()
+    return res.status(204).send()
+  } catch (err) {
+    console.error('[haven/thoughts:delete]', err.message)
+    return res.status(500).json({ error: 'Could not delete thought' })
   }
 })
 

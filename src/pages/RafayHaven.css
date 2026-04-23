@@ -88,6 +88,7 @@
   color: #0f3f57;
 }
 
+
 [data-theme='light'] .haven__form input::placeholder,
 [data-theme='light'] .haven__form textarea::placeholder {
   color: #6b8797;

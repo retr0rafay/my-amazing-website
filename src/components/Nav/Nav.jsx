@@ -52,6 +52,12 @@ export default function Nav() {
         >
           My Life
         </NavLink>
+        <NavLink
+          to="/rafay-thoughts"
+          className={({ isActive }) => `nav__link ${isActive ? 'nav__link--active' : ''}`}
+        >
+          Rafay&apos;s Thoughts
+        </NavLink>
         {showOwnerLink && (
           <NavLink
             to="/rafay-bot"
