@@ -7,8 +7,14 @@ import SoftwareEngineersAgeOfAIArticle, { meta as softwareEngineersMeta } from '
 import JuniorSoftwareEngineersInTheAIEraArticle, { meta as juniorEngineersMeta } from './junior-software-engineers-in-the-ai-era'
 import ThingsILearnedInMarch2026Article, { meta as thingsILearnedInMarch2026Meta } from './things-i-learned-in-march-2026'
 import BuildingYourOwnAIAssistantArticle, { meta as buildingYourOwnAIAssistantMeta } from './building-your-own-ai-assistant'
+import ThingsILearnedInApril2026Article, { meta as thingsILearnedInApril2026Meta } from './things-i-learned-in-april-2026'
 
 export const articles = [
+  {
+    slug: thingsILearnedInApril2026Meta.slug,
+    meta: thingsILearnedInApril2026Meta,
+    Component: ThingsILearnedInApril2026Article,
+  },
   {
     slug: buildingYourOwnAIAssistantMeta.slug,
     meta: buildingYourOwnAIAssistantMeta,
