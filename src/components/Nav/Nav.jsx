@@ -53,6 +53,12 @@ export default function Nav() {
           My Life
         </NavLink>
         <NavLink
+          to="/workouts"
+          className={({ isActive }) => `nav__link ${isActive ? 'nav__link--active' : ''}`}
+        >
+          Workouts
+        </NavLink>
+        <NavLink
           to="/rafay-thoughts"
           className={({ isActive }) => `nav__link ${isActive ? 'nav__link--active' : ''}`}
         >
