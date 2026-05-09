@@ -57,3 +57,15 @@
   opacity: 1;
   transform: rotate(0);
 }
+
+/*
+ * Nav uses a hamburger on the right (≤991px). Same corner as this control — shift left so
+ * both stay tappable (nav padding ~1.5rem + button ~2.75rem + gap).
+ */
+@media (max-width: 991px) {
+  .theme-toggle {
+    /* Clear hamburger (~2.75rem) + nav padding; keep theme & menu both above page content */
+    right: calc(1.5rem + 2.75rem + 0.65rem + env(safe-area-inset-right, 0px));
+    top: calc(1rem + env(safe-area-inset-top, 0px));
+  }
+}
