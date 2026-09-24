@@ -325,6 +325,12 @@
   max-height: 420px;
 }
 
+.article__figure--compare .article__video {
+  width: 100%;
+  max-width: none;
+  max-height: 420px;
+}
+
 .article__img {
   width: min(100%, 520px);
   max-height: 420px;
@@ -350,6 +356,15 @@
 .article__img.article__img--app-screenshot {
   width: min(100%, 920px);
   max-height: min(88vh, 780px);
+}
+
+.article__video {
+  width: min(100%, 360px);
+  max-height: min(80vh, 640px);
+  height: auto;
+  border-radius: 12px;
+  display: inline-block;
+  background: #000;
 }
 
 /* Reusable hover expand effect for all blog images (image only) */

@@ -65,22 +65,6 @@ function getMetaForPath(pathname, baseUrl) {
       url: `${baseUrl}/blog`,
     }
   }
-  if (pathname === '/my-life') {
-    return {
-      title: `My Life | ${SITE_NAME}`,
-      description: 'Photos and videos from Rafay in chronological order.',
-      image: `${baseUrl}/api/haven/og-image`,
-      url: `${baseUrl}/my-life`,
-    }
-  }
-  if (pathname === '/workouts') {
-    return {
-      title: `Workouts | ${SITE_NAME}`,
-      description: 'Training log — pasted workouts and optional photos.',
-      image: `${baseUrl}${DEFAULT_IMAGE}`,
-      url: `${baseUrl}/workouts`,
-    }
-  }
   const blogMatch = pathname.match(/^\/blog\/([^/]+)\/?$/)
   if (blogMatch) {
     const slug = blogMatch[1]

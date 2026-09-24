@@ -8,8 +8,14 @@ import JuniorSoftwareEngineersInTheAIEraArticle, { meta as juniorEngineersMeta }
 import ThingsILearnedInMarch2026Article, { meta as thingsILearnedInMarch2026Meta } from './things-i-learned-in-march-2026'
 import BuildingYourOwnAIAssistantArticle, { meta as buildingYourOwnAIAssistantMeta } from './building-your-own-ai-assistant'
 import ThingsILearnedInApril2026Article, { meta as thingsILearnedInApril2026Meta } from './things-i-learned-in-april-2026'
+import ThingsILearnedInSeptember2026Article, { meta as thingsILearnedInSeptember2026Meta } from './things-i-learned-in-september-2026'
 
 export const articles = [
+  {
+    slug: thingsILearnedInSeptember2026Meta.slug,
+    meta: thingsILearnedInSeptember2026Meta,
+    Component: ThingsILearnedInSeptember2026Article,
+  },
   {
     slug: thingsILearnedInApril2026Meta.slug,
     meta: thingsILearnedInApril2026Meta,

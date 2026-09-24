@@ -5,12 +5,8 @@ import Layout from './components/Layout'
 import Home from './pages/Home'
 import Blog from './pages/Blog'
 import ArticlePage from './pages/ArticlePage'
-import MyLife from './pages/MyLife'
 
 const RafayHaven = lazy(() => import('./pages/RafayHaven'))
-const RafayBot = lazy(() => import('./pages/RafayBot'))
-const RafayThoughts = lazy(() => import('./pages/RafayThoughts'))
-const Workouts = lazy(() => import('./pages/Workouts'))
 
 function App() {
   return (
@@ -22,36 +18,11 @@ function App() {
               <Route index element={<Home />} />
               <Route path="blog" element={<Blog />} />
               <Route path="blog/:slug" element={<ArticlePage />} />
-              <Route path="my-life" element={<MyLife />} />
-              <Route
-                path="workouts"
-                element={(
-                  <Suspense fallback={null}>
-                    <Workouts />
-                  </Suspense>
-                )}
-              />
-              <Route
-                path="rafay-thoughts"
-                element={(
-                  <Suspense fallback={null}>
-                    <RafayThoughts />
-                  </Suspense>
-                )}
-              />
               <Route
                 path="rafay-haven"
                 element={(
                   <Suspense fallback={null}>
                     <RafayHaven />
-                  </Suspense>
-                )}
-              />
-              <Route
-                path="rafay-bot"
-                element={(
-                  <Suspense fallback={null}>
-                    <RafayBot />
                   </Suspense>
                 )}
               />
