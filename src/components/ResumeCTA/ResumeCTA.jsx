@@ -2,7 +2,7 @@ import AnimatedSection from '../AnimatedSection'
 import './ResumeCTA.css'
 
 // Google Drive PDF resume (Share → "Anyone with the link" for view/download)
-const RESUME_URL = 'https://drive.google.com/file/d/1iBpx7QKHaM-MaPBpit7IdUUyeD5G8VSI/view?usp=sharing'
+const RESUME_URL = 'https://drive.google.com/file/d/1ZBxZHXyrbGkoZLCOaPyAl838xhD51i52/view?usp=sharing'
 
 export default function ResumeCTA() {
   return (
